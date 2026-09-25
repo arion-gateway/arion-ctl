@@ -1,0 +1,8 @@
+**/deps/
+**/_build/
+**/erl_crash.dump
+.elixir_ls/
+.arion-demo/
+*.tgz
+**/__pycache__/
+apps/arion_k8s_controller/conformance/reports/

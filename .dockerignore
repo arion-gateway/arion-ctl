@@ -1,0 +1,14 @@
+.git
+.elixir_ls
+.arion-demo
+
+**/_build
+**/deps
+target
+
+tmp
+*.log
+
+**/erl_crash.dump
+
+**/__pycache__

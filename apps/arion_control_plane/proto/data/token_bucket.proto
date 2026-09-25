@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package data;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+message TokenBucket {
+  // maps to "envoy.type.v3.TokenBucket"
+
+  uint32 max_tokens = 1;
+  google.protobuf.UInt32Value tokens_per_fill = 2;
+  google.protobuf.Duration fill_interval = 3;
+}

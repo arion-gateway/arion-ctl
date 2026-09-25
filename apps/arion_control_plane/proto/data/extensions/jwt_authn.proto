@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/data_source.proto";
+import "data/string.proto";
+import "route/route_components.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+message HttpUri {
+  // maps to "envoy.config.core.v3.HttpUri"
+
+  string uri = 1;
+  oneof http_upstream_type {
+    string cluster = 2;
+  }
+  google.protobuf.Duration timeout = 3;
+}
+
+message BackoffStrategy {
+  // maps to "envoy.config.core.v3.BackoffStrategy"
+
+  google.protobuf.Duration base_interval = 1;
+  google.protobuf.Duration max_interval = 2;
+}
+
+message CoreRetryPolicy {
+  // maps to "envoy.config.core.v3.RetryPolicy"
+
+  BackoffStrategy retry_back_off = 1;
+  google.protobuf.UInt32Value num_retries = 2;
+  string retry_on = 3;
+
+  reserved 4 to 6;
+  reserved "retry_priority", "retry_host_predicate", "host_selection_retry_max_attempts";
+}
+
+message RemoteJwks {
+  // maps to "envoy.extensions.filters.http.jwt_authn.v3.RemoteJwks"
+
+  HttpUri http_uri = 1;
+  google.protobuf.Duration cache_duration = 2;
+  CoreRetryPolicy retry_policy = 4;
+
+  reserved 3;
+  reserved "async_fetch";
+}
+
+message JwtHeader {
+  // maps to "envoy.extensions.filters.http.jwt_authn.v3.JwtHeader"
+
+  string name = 1;
+  string value_prefix = 2;
+}
+
+message JwtClaimToHeader {
+  // maps to "envoy.extensions.filters.http.jwt_authn.v3.JwtClaimToHeader"
+
+  string header_name = 1;
+  string claim_name = 2;
+}
+
+message JwtProvider {
+  // maps to "envoy.extensions.filters.http.jwt_authn.v3.JwtProvider"
+
+  string issuer = 1;
+  repeated string audiences = 2;
+  data.StringMatcher subjects = 19;
+  oneof jwks_source_specifier {
+    RemoteJwks remote_jwks = 3;
+    data.DataSource local_jwks = 4;
+  }
+  bool forward = 5;
+  repeated JwtHeader from_headers = 6;
+  repeated string from_params = 7;
+  repeated string from_cookies = 13;
+  string forward_payload_header = 8;
+  bool pad_forward_payload_header = 11;
+  string payload_in_metadata = 9;
+  string header_in_metadata = 14;
+  string failed_status_in_metadata = 16;
+  uint32 clock_skew_seconds = 10;
+  bool clear_route_cache = 17;
+  repeated JwtClaimToHeader claim_to_headers = 15;
+
+  reserved 12, 18, 20 to 21;
+  reserved "jwt_cache_config", "normalize_payload_in_metadata", "require_expiration", "max_lifetime";
+}
+
+message JwtRequirement {
+  // maps to "envoy.extensions.filters.http.jwt_authn.v3.JwtRequirement"
+
+  oneof requires_type {
+    string provider_name = 1;
+  }
+
+  reserved 2 to 7;
+  reserved "provider_and_audiences", "requires_any", "requires_all", "allow_missing_or_failed", "allow_missing", "extract_only_without_validation";
+}
+
+message RequirementRule {
+  // maps to "envoy.extensions.filters.http.jwt_authn.v3.RequirementRule"
+
+  route.RouteMatch match = 1;
+  oneof requirement_type {
+    JwtRequirement requires = 2;
+  }
+
+  reserved 3;
+  reserved "requirement_name";
+}
+
+message JwtAuthentication {
+  // maps to "envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication"
+
+  map<string, JwtProvider> providers = 1;
+  repeated RequirementRule rules = 2;
+
+  reserved 3 to 7;
+  reserved "filter_state_rules", "bypass_cors_preflight", "requirement_map", "strip_failure_response", "stat_prefix";
+}

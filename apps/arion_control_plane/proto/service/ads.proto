@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package envoy.service.discovery.v3;
+
+import "data/discovery.proto";
+
+service AggregatedDiscoveryService {
+
+  rpc DeltaAggregatedResources(stream  data.DeltaDiscoveryRequest)
+      returns (stream  data.DeltaDiscoveryResponse) {
+  }
+
+}

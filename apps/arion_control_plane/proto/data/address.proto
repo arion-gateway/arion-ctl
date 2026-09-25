@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package data;
+
+import "data/socket_options.proto";
+import "google/protobuf/wrappers.proto";
+
+message Address {
+  // maps to "envoy.core.v3.Address"
+
+  oneof address {
+    SocketAddress socket_address = 1;
+    Pipe pipe = 2;
+  }
+
+  reserved 3;
+  reserved "envoy_internal_address";
+}
+
+message Pipe {
+  // maps to "envoy.core.v3.Pipe"
+  string path = 1;
+  uint32 mode = 2;
+}
+
+message SocketAddress {
+  // maps to "envoy.core.v3.SocketAddress"
+
+  enum Protocol {
+    TCP = 0;
+    UDP = 1;
+  }
+
+  Protocol protocol = 1;
+  string address = 2;
+  oneof port_specifier {
+    uint32 port_value = 3;
+  }
+
+  reserved 4 to 6;
+  reserved "named_port", "resolver_name", "ipv4_compat";
+}
+
+message TcpKeepalive {
+  google.protobuf.UInt32Value keepalive_probes = 1;
+  google.protobuf.UInt32Value keepalive_time = 2;
+  google.protobuf.UInt32Value keepalive_interval = 3;
+}
+
+message BindConfig {
+  // maps to "envoy.core.v3.BindConfig"
+
+  SocketAddress source_address = 1;
+  google.protobuf.BoolValue freebind = 2;
+  repeated SocketOption socket_options = 3;
+
+  reserved 4 to 6;
+  reserved "extra_source_addresses", "additional_source_addresses", "local_address_selector";
+}
+
+message CidrRange {
+  // maps to "envoy.core.v3.CidrRange"
+
+  string address_prefix = 1;
+  google.protobuf.UInt32Value prefix_len = 2;
+}

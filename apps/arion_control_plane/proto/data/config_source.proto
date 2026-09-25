@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package data;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+enum ApiVersion {
+  AUTO = 0;
+  V3 = 2;
+  reserved 1;
+  reserved "V2";
+}
+
+message ApiConfigSource {
+  // maps to "envoy.core.v3.ApiConfigSource"
+
+  enum ApiType {
+    DEPRECATED_AND_UNAVAILABLE_DO_NOT_USE = 0;
+    GPRC = 2;
+    DELTA_GRPC = 3;
+    AGGREGATED_DELTA_GRPC = 6;
+
+    reserved 1, 5;
+    reserved "REST", "AGGREGATED_GRPC";
+  }
+
+  ApiType api_type = 1;
+  repeated GrpcService grpc_services = 4;
+  google.protobuf.Duration request_timeout = 5;
+  ApiVersion transport_api_version = 8;
+
+  reserved 2 to 3, 6 to 7, 9;
+  reserved "cluster_names", "refresh_delay", "rate_limit_settings", "set_node_on_first_message_only", "config_validators";
+}
+
+message AggregatedConfigSource {}
+
+message ConfigSource {
+  // maps to "envoy.core.v3.ConfigSource"
+
+  oneof config_source_specifier {
+    ApiConfigSource api_config_source = 2;
+    AggregatedConfigSource ads = 3;
+  }
+  ApiVersion resource_api_version = 6;
+
+  reserved 1, 4 to 5, 7 to 8;
+  reserved "path", "self", "path_config_source", "authorities", "initial_fetch_timeout";
+}
+
+
+message GrpcService {
+  // maps to "envoy.core.v3.GrpcService";
+
+  message EnvoyGrpc {
+    string cluster_name = 1;
+    google.protobuf.UInt32Value max_receive_message_length = 4;
+
+    reserved 2, 3, 5;
+    reserved "authority", "retry_policy", "skip_envoy_headers";
+  }
+
+  message GoogleGrpc {
+    string target_uri = 1;
+
+    reserved 2 to 10;
+    reserved "channel_credentials", "call_credentials", "stat_prefix", "credentials_factory_name", "config", "per_stream_buffer_limit_bytes", "channel_args", "channel_credentials_plugin", "call_credentials_plugin";
+  }
+
+  oneof target_specifier {
+    EnvoyGrpc envoy_grpc = 1;
+    GoogleGrpc google_grpc = 2;
+  }
+
+  google.protobuf.Duration timeout = 3;
+
+  reserved 4 to 6;
+  reserved "initial_metadata", "retry_policy";
+}

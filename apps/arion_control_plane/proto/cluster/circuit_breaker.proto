@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package cluster;
+
+import "google/protobuf/wrappers.proto";
+
+message CircuitBreakers {
+  // maps to "envoy.config.cluster.v3.CircuitBreakers"
+
+  enum RoutingPriority {
+    DEFAULT = 0;
+    HIGH = 1;
+  }
+
+  message Thresholds {
+    RoutingPriority priority = 1;
+    google.protobuf.UInt32Value max_requests = 4;
+    google.protobuf.UInt32Value max_retries = 5;
+    bool track_remaining = 6;
+
+    reserved 2, 3, 7 to 8;
+    reserved "max_connections", "max_pending_requests", "max_connection_pools", "retry_budget";
+  }
+
+  repeated Thresholds thresholds = 1;
+
+  reserved 2;
+  reserved "per_host_thresholds";
+}

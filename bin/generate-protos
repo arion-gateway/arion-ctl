@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/../apps/arion_control_plane"
+task_tmp=$(mktemp -d)
+trap 'rm -rf "$task_tmp"' EXIT
+mapfile -t protos < <(find proto -name '*.proto' -print | sort)
+protoc --elixir_out=plugins=grpc,package_prefix=Arion.ControlPlane.Pb:"$task_tmp" --proto_path=proto "${protos[@]}"
+python3 - "$task_tmp" <<'PYGEN'
+from pathlib import Path
+import sys
+out = Path(sys.argv[1])
+for proto in Path("proto").rglob("*.proto"):
+    relative = proto.relative_to("proto").with_suffix(".pb.ex")
+    matches = [p for p in out.rglob("*.pb.ex") if str(p).endswith("/" + str(relative))]
+    if len(matches) != 1:
+        raise RuntimeError(f"Expected one generated file for {proto}: {matches}")
+    target = Path("lib/arion_control_plane/pb") / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(matches[0].read_bytes())
+PYGEN

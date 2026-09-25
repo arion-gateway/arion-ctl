@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package data;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
+
+message Metadata {
+  // maps to "envoy.core.v3.Metadata"
+
+  map<string, google.protobuf.Struct> filter_metadata = 1;
+  map<string, google.protobuf.Any> typed_filter_metadata = 2;
+}
+
+message MetadataKey {
+  // maps to "envoy.type.metadata.v3.MetadataKey"
+
+  message PathSegment {
+    oneof segment {
+      string key = 1;
+    }
+  }
+
+  string key = 1;
+  repeated PathSegment path = 2;
+}

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package filter;
+
+import "data/extensions/accesslog.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+
+message TcpProxy {
+  // maps to "envoy.config.extensions.filters.network.tcp_proxy.TcpProxy"
+
+  message WeightedCluster {
+    // maps to "envoy.config.extensions.filters.network.tcp_proxy.TcpProxy.WeightedCluster"
+    message ClusterWeight {
+      string name = 1;
+      uint32 weight = 2;
+
+      reserved 3;
+      reserved "metadata_match";
+    }
+
+    repeated ClusterWeight clusters = 1;
+  }
+
+  message TcpAccessLogOptions {
+    google.protobuf.Duration access_log_flush_interval = 1;
+    bool flush_access_log_on_connected = 2;
+  }
+
+  string stat_prefix = 1;
+  oneof cluster_specifier {
+    string cluster = 2;
+    WeightedCluster weighted_clusters = 10;
+  }
+  google.protobuf.Duration idle_timeout = 8;
+  repeated  data.extensions.AccessLog access_log = 5;
+  google.protobuf.UInt32Value max_connect_attempts = 7;
+  google.protobuf.Duration max_downstream_connection_duration = 13;
+  TcpAccessLogOptions access_log_options = 17;
+
+  reserved 3 to 4, 6, 9, 11 to 12, 15 to 16;
+  reserved "deprecated_v1", "on_demand", "metadata_match", "upstream_idle_timeout", "downstream_idle_timeout", "hash_policy", "tunneling_config", "access_log_flush_interval", "flush_access_log_on_connected";
+}

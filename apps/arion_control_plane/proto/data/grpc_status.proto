@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package data;
+
+import "google/protobuf/any.proto";
+
+
+message Status {
+  // maps to "google/rpc/Status"
+  int32 code = 1;
+  string message = 2;
+  repeated google.protobuf.Any details = 3;
+}

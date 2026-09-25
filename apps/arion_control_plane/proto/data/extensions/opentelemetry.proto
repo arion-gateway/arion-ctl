@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/config_source.proto";
+
+message OpenTelemetryConfig {
+  // maps to "envoy.config.trace.v3.OpenTelemetryConfig"
+
+  data.GrpcService grpc_service = 1;
+  string service_name = 2;
+
+  reserved 3 to 6;
+  reserved "http_service", "resource_detectors", "sampler", "max_cache_size";
+}
+
+message OpenTelemetrySinkConfig {
+  // maps to "envoy.extensions.stat_sinks.open_telemetry.v3.SinkConfig"
+
+  oneof protocol_specifier {
+    data.GrpcService grpc_service = 1;
+  }
+  bool report_counters_as_deltas = 2;
+  bool report_histograms_as_deltas = 3;
+  string prefix = 6;
+
+  reserved 4 to 5, 7 to 8;
+  reserved "emit_tags_as_attributes", "use_tag_extracted_name", "resource_detectors", "custom_metric_conversions";
+}

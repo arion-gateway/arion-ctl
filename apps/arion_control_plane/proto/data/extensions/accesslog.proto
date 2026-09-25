@@ -1,0 +1,358 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/address.proto";
+import "data/percent.proto";
+import "data/headers.proto";
+import "data/request.proto";
+import "data/metadata.proto";
+import "data/data_source.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+
+message AccessLog {
+  // maps to "envoy.extensions.filter.accesslog.v3.AccessLog"
+
+  string name = 1;
+  AccessLogFilter filter = 2;
+  oneof config_type {
+    google.protobuf.Any typed_config = 4;
+  }
+
+  reserved 3;
+  reserved "config";
+}
+
+message AccessLogFilter {
+  oneof filter_specifier {
+    StatusCodeFilter status_code_filter = 1;
+    DurationFilter duration_filter = 2;
+    RuntimeFilter runtime_filter = 5;
+    AndFilter and_filter = 6;
+    OrFilter or_filter = 7;
+    HeaderFilter header_filter = 8;
+    ResponseFlagFilter response_flag_filter = 9;
+    GrpcStatusFilter grpc_status_filter = 10;
+    LogTypeFilter log_type_filter = 13;
+  }
+
+  reserved 3, 4, 11 to 12;
+  reserved "traceable_filter", "not_health_check_filter", "extension_filter", "metadata_filter";
+}
+
+message ComparisonFilter {
+  enum Op {
+    EQ = 0;
+    GE = 1;
+    LE = 2;
+  }
+  Op op = 1;
+  RuntimeUInt32 value = 2;
+}
+
+message RuntimeUInt32 {
+  uint32 default_value = 2;
+  string runtime_key = 3;
+}
+
+message StatusCodeFilter {
+  ComparisonFilter comparison = 1;
+}
+
+message DurationFilter {
+  ComparisonFilter comparison = 1;
+}
+
+message RuntimeFilter {
+  string runtime_key = 1;
+   data.FractionalPercent percent_sampled = 2;
+
+  reserved 3;
+  reserved "use_independent_randomness";
+}
+
+message AndFilter {
+  repeated AccessLogFilter filters = 1;
+}
+
+message OrFilter {
+  repeated AccessLogFilter filters = 2;
+}
+
+message HeaderFilter {
+   data.HeaderMatcher header = 1;
+}
+
+message ResponseFlagFilter {
+  repeated string flags = 1;
+}
+
+message LogTypeFilter {
+  repeated AccessLogType types = 1;
+  bool exclude = 2;
+}
+
+message GrpcStatusFilter {
+  enum Status {
+    OK = 0;
+    CANCELED = 1;
+    UNKNOWN = 2;
+    INVALID_ARGUMENT = 3;
+    DEADLINE_EXCEEDED = 4;
+    NOT_FOUND = 5;
+    ALREADY_EXISTS = 6;
+    PERMISSION_DENIED = 7;
+    RESOURCE_EXHAUSTED = 8;
+    FAILED_PRECONDITION = 9;
+    ABORTED = 10;
+    OUT_OF_RANGE = 11;
+    UNIMPLEMENTED = 12;
+    INTERNAL = 13;
+    UNAVAILABLE = 14;
+    DATA_LOSS = 15;
+    UNAUTHENTICATED = 16;
+  }
+
+  repeated Status statuses = 1;
+  bool exclude = 2;
+}
+
+enum AccessLogType {
+  // maps to "envoy.data.accesslog.v3.AccessLogType"
+  NotSet = 0;
+  TcpUpstreamConnected = 1;
+  TcpPeriodic = 2;
+  TcpConnectionEnd = 3;
+  DownstreamStart = 4;
+  DownstreamPeriodic = 5;
+  DownstreamEnd = 6;
+  UpstreamPoolReady = 7;
+  UpstreamPeriodic = 8;
+  UpstreamEnd = 9;
+  DownstreamTunnelSuccessfullyEstablished = 10;
+  UdpTunnelUpstreamConnected = 11;
+  UdpPeriodic = 12;
+  UdpSessionEnd = 13;
+}
+
+message TCPAccessLogEntry {
+  // maps to "envoy.data.accesslog.v3.TCPAccessLogEntry"
+
+  AccessLogCommon common_properties = 1;
+  ConnectionProperties connection_properties = 2;
+}
+
+message HTTPAccessLogEntry {
+  // maps to "envoy.data.accesslog.v3.HTTPAccessLogEntry"
+
+  enum HTTPVersion {
+    PROTOCOL_UNSPECIFIED = 0;
+    HTTP10 = 1;
+    HTTP11 = 2;
+    HTTP2 = 3;
+    HTTP3 = 4;
+  }
+
+  AccessLogCommon common_properties = 1;
+  HTTPVersion protocol_version = 2;
+  HTTPRequestProperties request = 3;
+  HTTPResponseProperties response = 4;
+}
+
+message ConnectionProperties {
+  // maps to "envoy.data.accesslog.v3.ConnectionProperties"
+
+  uint64 received_bytes = 1;
+  uint64 sent_bytes = 2;
+}
+
+
+message AccessLogCommon {
+  // maps to "envoy.data.accesslog.v3.AccessLogCommon"
+
+   data.Address downstream_remote_address = 2;
+   data.Address downstream_local_address = 3;
+  TLSProperties tls_properties = 4;
+  google.protobuf.Timestamp start_time = 5;
+  google.protobuf.Duration time_to_last_rx_byte = 6;
+  google.protobuf.Duration time_to_first_upstream_tx_byte = 7;
+  google.protobuf.Duration time_to_last_upstream_tx_byte = 8;
+  google.protobuf.Duration time_to_first_upstream_rx_byte = 9;
+  google.protobuf.Duration time_to_last_upstream_rx_byte = 10;
+  google.protobuf.Duration time_to_first_downstream_tx_byte = 11;
+  google.protobuf.Duration time_to_last_downstream_tx_byte = 12;
+   data.Address upstream_remote_address = 13;
+   data.Address upstream_local_address = 14;
+  string upstream_cluster = 15;
+  ResponseFlags response_flags = 16;
+   data.Metadata metadata = 17;
+  string upstream_transport_failure_reason = 18;
+  string route_name = 19;
+   data.Address downstream_direct_remote_address = 20;
+  map<string, google.protobuf.Any> filter_state_objects = 21;
+  map<string, string> custom_tags = 22;
+  google.protobuf.Duration duration = 23;
+  uint32 upstream_request_attempt_count = 24;
+  string connection_termination_details = 25;
+  string stream_id = 26;
+  string downstream_transport_failure_reason = 28;
+  uint64 downstream_wire_bytes_sent = 29;
+  uint64 downstream_wire_bytes_received = 30;
+  uint64 upstream_wire_bytes_sent = 31;
+  uint64 upstream_wire_bytes_received = 32;
+  AccessLogType access_log_type = 33;
+
+  reserved 1, 27;
+  reserved "sample_rate", "intermediate_log_entry";
+}
+
+
+message ResponseFlags {
+// maps to "envoy.data.accesslog.v3.ResponseFlags"
+
+  message Unauthorized {
+    enum Reason {
+      REASON_UNSPECIFIED = 0;
+      EXTERNAL_SERVICE = 1;
+    }
+
+    Reason reason = 1;
+  }
+
+  bool failed_local_healthcheck = 1;
+  bool no_healthy_upstream = 2;
+  bool upstream_request_timeout = 3;
+  bool local_reset = 4;
+  bool upstream_remote_reset = 5;
+  bool upstream_connection_failure = 6;
+  bool upstream_connection_termination = 7;
+  bool upstream_overflow = 8;
+  bool no_route_found = 9;
+  bool delay_injected = 10;
+  bool fault_injected = 11;
+  bool rate_limited = 12;
+  Unauthorized unauthorized_details = 13;
+  bool rate_limit_service_error = 14;
+  bool downstream_connection_termination = 15;
+  bool upstream_retry_limit_exceeded = 16;
+  bool stream_idle_timeout = 17;
+  bool invalid_envoy_request_headers = 18;
+  bool downstream_protocol_error = 19;
+  bool upstream_max_stream_duration_reached = 20;
+  bool response_from_cache_filter = 21;
+  bool no_filter_config_found = 22;
+  bool duration_timeout = 23;
+  bool upstream_protocol_error = 24;
+  bool no_cluster_found = 25;
+  bool overload_manager = 26;
+  bool dns_resolution_failure = 27;
+}
+
+message TLSProperties {
+  // maps to "envoy.data.accesslog.v3.TLSProperties"
+
+  enum TLSVersion {
+    VERSION_UNSPECIFIED = 0;
+    TLSv1 = 1;
+    TLSv1_1 = 2;
+    TLSv1_2 = 3;
+    TLSv1_3 = 4;
+  }
+
+  message CertificateProperties {
+    message SubjectAltName {
+      oneof san {
+        string uri = 1;
+      }
+
+      reserved 2;
+      reserved "dns";
+    }
+
+    repeated SubjectAltName subject_alt_name = 1;
+    string subject = 2;
+  }
+
+  TLSVersion tls_version = 1;
+  google.protobuf.UInt32Value tls_cipher_suite = 2;
+  string tls_sni_hostname = 3;
+  CertificateProperties local_certificate_properties = 4;
+  CertificateProperties peer_certificate_properties = 5;
+  string tls_session_id = 6;
+  string ja3_fingerprint = 7;
+}
+
+message HTTPRequestProperties {
+  // maps to "envoy.data.accesslog.v3.HTTPRequestProperties"
+
+  data.RequestMethod request_method = 1;
+  string scheme = 2;
+  string authority = 3;
+  google.protobuf.UInt32Value port = 4;
+  string path = 5;
+  string user_agent = 6;
+  string referer = 7;
+  string forwarded_for = 8;
+  string request_id = 9;
+  string original_path = 10;
+  uint64 request_headers_bytes = 11;
+  uint64 request_body_bytes = 12;
+  map<string, string> request_headers = 13;
+  uint64 upstream_header_bytes_sent = 14;
+  uint64 downstream_header_bytes_received = 15;
+}
+
+message HTTPResponseProperties {
+  // maps to "envoy.data.accesslog.v3.HTTPResponseProperties"
+
+  google.protobuf.UInt32Value response_code = 1;
+  uint64 response_headers_bytes = 2;
+  uint64 response_body_bytes = 3;
+  map<string, string> response_headers = 4;
+  map<string, string> response_trailers = 5;
+  string response_code_details = 6;
+  uint64 upstream_header_bytes_received = 7;
+  uint64 downstream_header_bytes_sent = 8;
+}
+
+message FileAccessLog {
+  // maps to "envoy.extensions.access_loggers.file.v3.FileAccessLog";
+  string path = 1;
+
+  oneof access_log_format {
+    SubstitutionFormatString log_format = 5;
+  }
+
+  reserved 2,3,4;
+  reserved "format","json_format","typed_json_format";
+}
+
+
+message StdoutAccessLog {
+  oneof access_log_format {
+    SubstitutionFormatString log_format = 1;
+  }
+}
+
+message StderrAccessLog {
+  oneof access_log_format {
+    SubstitutionFormatString log_format = 1;
+  }
+}
+
+
+
+message SubstitutionFormatString {
+  oneof format {
+    string text_format = 1;
+    DataSource text_format_source = 5;
+  }
+  bool omit_empty_values = 3;
+
+  reserved 2, 4, 6, 7;
+  reserved "json_format", "content_type", "formatters", "json_format_options";
+}

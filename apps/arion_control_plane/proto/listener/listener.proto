@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package listener;
+
+import "listener/listener_components.proto";
+import "data/address.proto";
+import "data/socket_options.proto";
+import "data/extensions/accesslog.proto";
+import "google/protobuf/wrappers.proto";
+
+message Listener {
+  // maps to "envoy.config.listener.v3.Listener"
+
+  string name = 1;
+   data.Address address = 2;
+  string stat_prefix = 28;
+  repeated FilterChain filter_chains = 3;
+  repeated ListenerFilter listener_filters = 9;
+  repeated  data.SocketOption socket_options = 13;
+  google.protobuf.BoolValue enable_reuse_port = 29;
+  repeated  data.extensions.AccessLog access_log = 22;
+
+  reserved 4 to 8, 10 to 12, 14 to 21, 23 to 27, 30 to 32, 34;
+  reserved "additional_addresses", "use_original_dst", "per_connection_buffer_limit_bytes", "drain_type", "filter_chain_matcher", "default_filter_chain", "listener_metadata", "deprecated_v1", "transparent", "listener_filters_timeout", "continue_on_listener_filters_timeout", "tcp_fast_open_queue_length", "traffic_direction", "freebind", "udp_listener_config", "api_listener", "connection_balance_config", "reuse_port", "tcp_backlog_size", "max_connections_to_accept_per_socket_event", "bind_to_port", "internal_listener", "enable_mptcp", "ignore_global_conn_limit";
+}

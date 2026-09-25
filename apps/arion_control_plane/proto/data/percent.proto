@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package data;
+
+message Percent {
+  // maps to "envoy.type.Percent";
+  double value = 1;
+}
+
+
+message FractionalPercent {
+  // maps to "envoy.type.FractionalPercent";
+
+  enum DenominatorType {
+    HUNDRED = 0;
+    TEN_THOUSAND = 1;
+    MILLION = 2;
+  }
+
+  uint32 numerator = 1;
+  DenominatorType denominator = 2;
+}
+
+message RuntimeFractionalPercent {
+  // maps to "envoy.type.RuntimeFractionalPercent";
+
+  FractionalPercent default_value = 1;
+  string runtime_key = 2;
+}

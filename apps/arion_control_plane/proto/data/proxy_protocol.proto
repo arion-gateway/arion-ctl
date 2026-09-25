@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package data;
+
+
+message ProxyProtocolPassThroughTLVs {
+  enum PassTLVsMatchType {
+    INCLUDE_ALL = 0;
+    INCLUDE = 1;
+  }
+  PassTLVsMatchType match_type = 1;
+  repeated uint32 tlv_type = 2;
+}
+
+message TlvEntry {
+  uint32 type = 1;
+  bytes value = 2;
+}
+
+message ProxyProtocolConfig {
+  enum Version {
+    V1 = 0;
+    V2 = 1;
+  }
+
+  Version version = 1;
+  ProxyProtocolPassThroughTLVs pass_through_tlvs = 2;
+  repeated TlvEntry added_tlvs = 3;
+}
+
+message PerHostConfig {
+  repeated TlvEntry added_tlvs = 1;
+}

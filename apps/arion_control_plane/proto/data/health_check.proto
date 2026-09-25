@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package data;
+
+import "data/request.proto";
+import "data/range.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+enum HealthStatus {
+  UNKNOWN = 0;
+  HEALTHY = 1;
+  UNHEALTHY = 2;
+  DRAINING = 3;
+  TIMEOUT = 4;
+  DEGRADED = 5;
+}
+
+message HealthStatusSet {
+  repeated HealthStatus statuses = 1;
+}
+
+message HealthCheck {
+ // maps to "envoy.core.v3.HealthCheck"
+
+  message Payload {
+    oneof payload {
+      string text = 1;
+      bytes binary = 2;
+    }
+  }
+
+  enum CodecClientType {
+    HTTP1 = 0;
+    HTTP2 = 1;
+  }
+
+
+
+  message HttpHealthCheck {
+    string host = 1;
+    string path = 2;
+    repeated  data.Int64Range expected_statuses = 9;
+    repeated  data.Int64Range retriable_statuses = 12;
+    CodecClientType codec_client_type = 10;
+
+     data.RequestMethod method = 13;
+
+    reserved 3 to 4, 6, 8, 11, 14;
+    reserved "send", "receive", "request_headers_to_add", "request_headers_to_remove", "service_name_matcher", "response_buffer_size";
+  }
+
+  message TcpHealthCheck {
+    Payload send = 1;
+    repeated Payload receive = 2;
+  }
+
+  message GrpcHealthCheck {
+    string service_name = 1;
+
+    reserved 2, 3;
+    reserved "authority", "initial_metadata";
+  }
+
+
+  google.protobuf.Duration timeout = 1;
+  google.protobuf.Duration interval = 2;
+  google.protobuf.Duration initial_jitter = 20;
+  google.protobuf.Duration interval_jitter = 3;
+  uint32 interval_jitter_percent = 18;
+  google.protobuf.Duration unhealthy_interval = 14;
+  google.protobuf.Duration unhealthy_edge_interval = 15;
+  google.protobuf.Duration healthy_edge_interval = 16;
+
+  google.protobuf.UInt32Value unhealthy_threshold = 4;
+  google.protobuf.UInt32Value healthy_threshold = 5;
+
+  oneof health_checker {
+    HttpHealthCheck http_health_check = 8;
+    TcpHealthCheck tcp_health_check = 9;
+    GrpcHealthCheck grpc_health_check = 11;
+  }
+
+  reserved 6 to 7, 10, 12 to 13, 17, 19, 21 to 25;
+  reserved "alt_port", "reuse_connection", "custom_health_check", "no_traffic_interval", "no_traffic_healthy_interval", "event_log_path", "event_logger", "event_service", "always_log_health_check_failures", "tls_options", "transport_socket_match_criteria";
+}

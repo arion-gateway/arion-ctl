@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package data;
+
+
+message RegexMatcher {
+  // maps to  "enovy.type.matcher.v3.RegexMatcher";
+
+  string regex = 2;
+
+  reserved 1;
+  reserved "max_program_size";
+}
+
+
+message RegexMatchAndSubstitute {
+  // maps to  "type.matcher.v3.RegexMatchAndSubstitute";
+
+  RegexMatcher pattern = 1;
+  string substitution = 2;
+}

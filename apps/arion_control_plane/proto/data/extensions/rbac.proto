@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/address.proto";
+import "data/headers.proto";
+import "data/string.proto";
+import "data/request.proto";
+import "data/range.proto";
+
+message RBACNetworkFilter {
+  // maps to "envoy.extensions.filters.network.rbac.v3.RBAC"
+
+  RBAC rules = 1;
+  string stat_prefix = 3;
+
+  reserved 2,4 to 7;
+  reserved "matcher", "shadow_rules", "shadow_matcher", "shadow_rules_stat_prefix", "enforcement_type";
+}
+
+message RBACConfig {
+  // maps to "envoy.extensions.filters.http.rbac.v3.RBACConfig"
+
+  RBAC rules = 1;
+  string rules_stat_prefix = 6;
+  bool track_per_rule_stats = 7;
+
+  reserved 2, 4;
+  reserved "matcher", "shadow_rules", "shadow_matcher", "shadow_rules_stat_prefix";
+}
+
+
+message RBACPerRoute {
+  // maps to "envoy.extensions.filters.http.rbac.v3.RBACPerRoute"
+
+  RBACConfig rbac = 2;
+
+  reserved 1;
+}
+
+message RBAC {
+  // maps to "envoy.config.rbac.v3.RBAC";
+
+  enum Action {
+    ALLOW = 0;
+    DENY = 1;
+
+    reserved 2;
+    reserved "LOG";
+  }
+
+  Action action = 1;
+  map<string, Policy> policies = 2;
+
+  reserved 3;
+  reserved "audit_logging_options";
+}
+
+
+message Policy {
+  // maps to "envoy.config.rbac.v3.Policy";
+
+  repeated Permission permissions = 1;
+  repeated Principal principals = 2;
+
+  reserved 3, 4;
+  reserved "condition", "checked_condition";
+}
+
+message Permission {
+  // maps to "envoy.config.rbac.v3.Permission";
+
+  message Set {
+    repeated Permission rules = 1;
+  }
+
+  oneof rule {
+    Set and_rules = 1;
+    Set or_rules = 2;
+    bool any = 3;
+    data.HeaderMatcher header = 4;
+    data.PathMatcher url_path = 10;
+    data.CidrRange destination_ip = 5;
+    uint32 destination_port = 6;
+    data.Int32Range destination_port_range = 11;
+    Permission not_rule = 8;
+    data.StringMatcher requested_server_name = 9;
+  }
+
+   reserved 7, 12;
+   reserved "metadata", "matcher";
+}
+
+
+message Principal {
+  // maps to "envoy.config.rbac.v3.Principal";
+
+  message Set {
+    repeated Principal ids = 1;
+  }
+
+  message Authenticated {
+     data.StringMatcher principal_name = 2;
+
+    reserved 1;
+  }
+
+  oneof identifier {
+    Set and_ids = 1;
+    Set or_ids = 2;
+    bool any = 3;
+    Authenticated authenticated = 4;
+    data.CidrRange direct_remote_ip = 10;
+    data.CidrRange remote_ip = 11;
+    data.HeaderMatcher header = 6;
+    data.PathMatcher url_path = 9;
+    Principal not_id = 8;
+  }
+
+  reserved 5, 7, 12;
+    reserved "source_ip", "metadata", "filter_state";
+}
+
+message Action {
+  string name = 1;
+  RBAC.Action action = 2;
+}

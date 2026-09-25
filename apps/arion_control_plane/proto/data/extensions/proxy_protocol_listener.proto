@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/proxy_protocol.proto";
+
+message ProxyProtocolListenerFilter {
+  // maps to "envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol"
+  
+  bool allow_requests_without_proxy_protocol = 2;
+  data.ProxyProtocolPassThroughTLVs pass_through_tlvs = 3;
+  repeated data.ProxyProtocolConfig.Version disallowed_versions = 4;
+  string stat_prefix = 5;
+  
+  reserved 1;
+  reserved "rules";
+}

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package config;
+
+import "cluster/cluster.proto";
+import "listener/listener.proto";
+import "data/extensions/tls.proto";
+import "data/config_source.proto";
+import "data/node.proto";
+import "data/address.proto";
+import "data/socket_options.proto";
+
+message Bootstrap {
+  // maps to "envoy.config.bootstrap.v3.Bootstrap"
+
+  message StaticResources {
+    // maps to "envoy.config.bootstrap.v3.Bootstrap.StaticResources"
+
+    repeated  listener.Listener listeners = 1;
+    repeated  cluster.Cluster clusters = 2;
+    repeated  data.extensions.Secret secrets = 3;
+  }
+
+  message DynamicResources {
+    // maps to "envoy.config.bootstrap.v3.Bootstrap.DynamicResources"
+
+     data.ConfigSource lds_config = 1;
+     data.ConfigSource cds_config = 2;
+     data.ApiConfigSource ads_config = 3;
+
+    reserved 4 to 6;
+    reserved "lds_resources_locator", "cds_resources_locator";
+  }
+
+   data.Node node = 1;
+  StaticResources static_resources = 2;
+  DynamicResources dynamic_resources = 3;
+  Admin admin = 12;
+
+  reserved 4 to 10, 13 to 40;
+  reserved "cluster_manager", "flags_path", "hds_config", "runtime", "node_context_params", "stats_sinks", "deferred_stat_options", "stats_config", "stats_flush_interval", "stats_flush_on_admin", "tracing", "layered_runtime", "overload_manager", "enable_dispatcher_stats", "header_prefix", "stats_server_version_override", "use_tcp_for_dns_lookups", "dns_resolution_config", "typed_dns_resolver_config", "bootstrap_extensions", "fatal_actions", "config_sources", "default_config_source", "certificate_provider_instances", "inline_headers", "perf_tracing_file_path", "default_regex_engine", "xds_delegate_extension", "xds_config_tracker_extension", "listener_manager", "application_log_config", "grpc_async_client_manager_config", "watchdog", "watchdogs";
+}
+
+message Admin {
+  // maps to "envoy.config.bootstrap.v3.Admin"
+
+   data.Address address = 3;
+  repeated  data.SocketOption socket_options = 4;
+
+  reserved 1 to 2, 5 to 6;
+  reserved "access_log_path", "profile_path", "access_log", "ignore_global_conn_limit";
+}

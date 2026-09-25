@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package listener;
+
+
+import "google/protobuf/any.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+import "data/address.proto";
+import "data/socket.proto";
+
+message Filter {
+  // maps to "envoy.config.listener.v3.Filter"
+
+  string name = 1;
+  oneof config_type {
+    google.protobuf.Any typed_config = 4;
+  }
+  reserved 3, 2, 5;
+  reserved "config", "config_discovery";
+}
+
+message FilterChainMatch {
+  // maps to "envoy.config.listener.v3.FilterChainMatch"
+
+  enum ConnectionSourceType {
+    ANY = 0;
+    SAME_IP_OR_LOOPBACK = 1;
+    EXTERNAL = 2;
+  }
+
+  google.protobuf.UInt32Value destination_port = 8;
+  repeated  data.CidrRange prefix_ranges = 3;
+  ConnectionSourceType source_type = 12;
+  repeated uint32 source_ports = 7;
+  repeated string server_names = 11;
+  string transport_protocol = 9;
+  repeated string application_protocols = 10;
+
+  reserved 1, 4 to 6;
+  reserved "address_suffix", "suffix_len", "direct_source_prefix_ranges", "source_prefix_ranges";
+}
+
+message FilterChain {
+  // maps to "envoy.config.listener.v3.FilterChain"
+
+  FilterChainMatch filter_chain_match = 1;
+  repeated Filter filters = 3;
+  data.TransportSocket transport_socket = 6;
+
+  google.protobuf.Duration transport_socket_connect_timeout = 9;
+  string name = 7;
+
+
+  reserved 2, 4 to 5, 8;
+  reserved "tls_context", "use_proxy_proto", "metadata", "on_demand_configuration";
+}
+
+
+message ListenerFilter {
+  // maps to "envoy.config.listener.v3.ListenerFilter"
+
+  string name = 1;
+  oneof config_type {
+    google.protobuf.Any typed_config = 3;
+  }
+
+  reserved 2, 4, 5;
+  reserved "config", "filter_disabled", "config_discovery";
+}

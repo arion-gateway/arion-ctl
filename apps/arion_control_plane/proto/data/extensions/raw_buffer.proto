@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package data.extensions;
+
+message RawBuffer {
+  // maps to "envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer"
+}

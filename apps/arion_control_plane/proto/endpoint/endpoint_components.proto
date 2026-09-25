@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package endpoint;
+
+import "data/health_check.proto";
+import "data/address.proto";
+import "google/protobuf/wrappers.proto";
+
+message Endpoint {
+  // maps to "envoy.config.endpoint.v3.Endpoint"
+
+  message HealthCheckConfig {
+    uint32 port_value = 1;
+    string hostname = 2;
+     data.Address address = 3;
+    bool disable_active_health_check = 4;
+  }
+
+  message AdditionalAddress {
+     data.Address address = 1;
+  }
+
+   data.Address address = 1;
+  HealthCheckConfig health_check_config = 2;
+  string hostname = 3;
+  repeated AdditionalAddress additional_addresses = 4;
+}
+
+
+message LbEndpoint {
+  // maps to "envoy.config.endpoint.v3.LbEndpoint"
+
+  oneof host_identifier {
+    Endpoint endpoint = 1;
+  }
+   data.HealthStatus health_status = 2;
+  google.protobuf.UInt32Value load_balancing_weight = 4;
+
+  reserved 3, 5;
+  reserved "metadata", "endpoint_name";
+}
+
+message Locality {
+  // maps to "envoy.config.core.v3.Locality"
+
+  string region = 1;
+  string zone = 2;
+  string sub_zone = 3;
+}
+
+message LocalityLbEndpoints {
+  // maps to "envoy.config.endpoints.v3.LocalityLbEndpoints"
+
+  Locality locality = 1;
+  repeated LbEndpoint lb_endpoints = 2;
+  uint32 priority = 5;
+
+  reserved 6 to 8;
+  reserved "load_balancer_endpoints", "leds_cluster_locality_config", "proximity";
+}

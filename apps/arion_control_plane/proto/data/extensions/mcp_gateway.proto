@@ -1,0 +1,223 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/data_source.proto";
+import "route/traffic_management.proto";
+import "google/protobuf/duration.proto";
+
+message McpGateway {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.McpGateway"
+
+  ServerInfo server_info = 1;
+  repeated Tool tools = 2;
+  ToolSearch search = 3;
+  TdsSpecifier tds = 4;
+  repeated DynamicMcpServer dynamic_mcp_servers = 5;
+  google.protobuf.Duration upstream_timeout = 6;
+  optional uint64 max_upstream_response_bytes = 7;
+  oneof mode {
+    ToolsMode tools_mode = 8;
+    CodeMode code_mode = 9;
+  }
+  repeated OpenApiToolSource open_api_tool_sources = 10;
+}
+
+message ServerInfo {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.ServerInfo"
+
+  string name = 1;
+  string version = 2;
+}
+
+message ToolsMode {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.ToolsMode"
+}
+
+message CodeMode {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.CodeMode"
+
+  google.protobuf.Duration execution_timeout = 1;
+  uint32 max_host_calls = 2;
+  uint32 max_concurrent_executions = 3;
+  uint32 max_concurrent_tool_calls = 8;
+  uint64 max_output_bytes = 4;
+  uint64 memory_limit_bytes = 5;
+  optional string engine_artifact_path = 6;
+  repeated Toolkit toolkits = 7;
+}
+
+message Tool {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.Tool"
+
+  string namespace = 1;
+  string name = 2;
+  string description = 3;
+  data.DataSource input_schema = 4;
+  data.DataSource output_schema = 5;
+  oneof upstream_backend {
+    RestBackend rest_backend = 6;
+    FunctionGraphBackend function_graph_backend = 7;
+    McpServerBackend mcp_server_backend = 8;
+  }
+  optional ToolRbac rbac = 9;
+  repeated float embedding = 10 [packed = true];
+  DisclosureMode disclosure_mode = 11;
+}
+
+enum DisclosureMode {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.DisclosureMode"
+
+  PROGRESSIVE = 0;
+  EAGER = 1;
+}
+
+message RestBackend {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.RestBackend"
+
+  string method = 1;
+  string path = 2;
+  repeated QueryParam query_params = 3;
+  string cluster = 4;
+  oneof body {
+    data.DataSource body_template = 5;
+    string body_json = 7;
+  }
+  HttpUpstreamPolicy upstream_policy = 6;
+}
+
+message HttpUpstreamPolicy {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.HttpUpstreamPolicy"
+
+  optional string authority = 1;
+  google.protobuf.Duration timeout = 2;
+  route.RetryPolicy retry_policy = 3;
+}
+
+message QueryParam {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.QueryParam"
+
+  string name = 1;
+  string source = 2;
+}
+
+message FunctionGraphBackend {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.FunctionGraphBackend"
+}
+
+message McpServerBackend {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.McpServerBackend"
+
+  enum TransportUpstream {
+    Sse = 0;
+    StreamableHttp = 1;
+  }
+
+  TransportUpstream transport = 1;
+  string url = 2;
+
+  reserved 3 to 4;
+  reserved "cache_duration", "dynamic_backend";
+}
+
+message DynamicMcpServer {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.DynamicMcpServer"
+
+  string namespace = 1;
+  string description = 2;
+  McpServerBackend.TransportUpstream transport = 3;
+  string url = 4;
+  google.protobuf.Duration cache_duration = 5;
+  optional ToolRbac rbac = 6;
+  DisclosureMode tool_disclosure_mode = 7;
+}
+
+message OpenApiToolSource {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.OpenApiToolSource"
+
+  data.DataSource spec = 1;
+  string namespace = 2;
+  string cluster = 3;
+  HttpUpstreamPolicy upstream_policy = 4;
+  optional ToolRbac rbac = 5;
+  DisclosureMode tool_disclosure_mode = 6;
+  optional string path_prefix = 7;
+  bool skip_unsupported_operations = 8;
+  repeated string include_operations = 9;
+  repeated string exclude_operations = 10;
+}
+
+message TdsSpecifier {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.TdsSpecifier"
+
+  string config_name = 1;
+}
+
+message ToolRbac {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.ToolRbac"
+
+  enum Action {
+    ALLOW = 0;
+    DENY = 1;
+  }
+
+  Action action = 1;
+  repeated McpPermission permissions = 2;
+}
+
+message McpPermission {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.Permission"
+
+  oneof permission_type {
+    JwtHeaderMatcher jwt_header = 1;
+    JwtClaimMatcher jwt_claim = 2;
+  }
+}
+
+message JwtHeaderMatcher {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.JwtHeaderMatcher"
+
+  string field = 1;
+  string value = 2;
+}
+
+message JwtClaimMatcher {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.JwtClaimMatcher"
+
+  string field = 1;
+  string value = 2;
+}
+
+message ToolSearch {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.ToolSearch"
+
+  optional uint32 max_allowable_results = 1;
+  RemoteEmbeddings embeddings = 2;
+}
+
+message RemoteEmbeddings {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.RemoteEmbeddings"
+
+  string cluster = 1;
+  string model_id = 2;
+  string path = 3;
+  google.protobuf.Duration timeout = 4;
+  uint32 dimensions = 5;
+  optional uint32 max_batch_size = 6;
+}
+
+message Toolkit {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.Toolkit"
+
+  string name = 1;
+  string description = 2;
+  string instructions = 3;
+  repeated ToolkitToolRef tools = 4;
+}
+
+message ToolkitToolRef {
+  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.ToolkitToolRef"
+
+  string namespace = 1;
+  string name = 2;
+}

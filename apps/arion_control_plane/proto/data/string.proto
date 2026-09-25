@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package data;
+
+import "data/regex.proto";
+
+message StringMatcher {
+  // maps to "envoy.type.matcher.v3.StringMatcher";
+
+  oneof match_pattern {
+    string exact = 1;
+    string prefix = 2;
+    string suffix = 3;
+    RegexMatcher safe_regex = 5;
+    string contains = 7;
+  }
+  bool ignore_case = 6;
+
+  reserved 4;
+  reserved "regex";
+}

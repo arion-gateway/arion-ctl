@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/extension.proto";
+import "data/metadata.proto";
+
+message RoundRobin {
+  // maps to "envoy.extensions.load_balancing_policies.round_robin.v3.RoundRobin"
+
+  reserved 1 to 2;
+  reserved "slow_start_config", "locality_lb_config";
+}
+
+message Random {
+  // maps to "envoy.extensions.load_balancing_policies.random.v3.Random"
+
+  reserved 1;
+  reserved "locality_lb_config";
+}
+
+message LeastRequest {
+  // maps to "envoy.extensions.load_balancing_policies.least_request.v3.LeastRequest"
+
+  reserved 1 to 6;
+  reserved "choice_count", "active_request_bias", "slow_start_config", "locality_lb_config", "enable_full_scan", "selection_method";
+}
+
+message RingHash {
+  // maps to "envoy.extensions.load_balancing_policies.ring_hash.v3.RingHash"
+
+  reserved 1 to 7;
+  reserved "hash_function", "minimum_ring_size", "maximum_ring_size", "use_hostname_for_hashing", "hash_balance_factor", "consistent_hashing_lb_config", "locality_weighted_lb_config";
+}
+
+message Maglev {
+  // maps to "envoy.extensions.load_balancing_policies.maglev.v3.Maglev"
+
+  reserved 1 to 3;
+  reserved "table_size", "consistent_hashing_lb_config", "locality_weighted_lb_config";
+}
+
+message OverrideHost {
+  // maps to "envoy.extensions.load_balancing_policies.override_host.v3.OverrideHost"
+
+  message OverrideHostSource {
+    string header = 1;
+    data.MetadataKey metadata = 2;
+  }
+
+  repeated OverrideHostSource override_host_sources = 1;
+  LoadBalancingPolicy fallback_policy = 3;
+
+  reserved 2;
+}
+
+message LoadBalancingPolicy {
+  // maps to "envoy.config.cluster.v3.LoadBalancingPolicy"
+
+  message Policy {
+    data.TypedExtensionConfig typed_extension_config = 4;
+
+    reserved 1 to 3;
+    reserved "name", "config", "typed_config";
+  }
+
+  repeated Policy policies = 1;
+}

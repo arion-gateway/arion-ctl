@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package route;
+
+import "data/headers.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+message RetryPolicy {
+  // maps to "envoy.config.route.v3.RetryPolicy";
+
+  enum ResetHeaderFormat {
+    SECONDS = 0;
+    UNIX_TIMESTAMP = 1;
+  }
+  message RetryBackOff {
+    google.protobuf.Duration base_interval = 1;
+    google.protobuf.Duration max_interval = 2;
+  }
+  message ResetHeader {
+    string name = 1;
+    ResetHeaderFormat format = 2;
+  }
+  message RateLimitedRetryBackOff {
+    // maps to "envoy.config.route.v3.RetryPolicy.RateLimitedRetryBackOff";
+    repeated ResetHeader reset_headers = 1;
+    google.protobuf.Duration max_interval = 2;
+  }
+
+  string retry_on = 1;
+  google.protobuf.UInt32Value num_retries = 2;
+  google.protobuf.Duration per_try_timeout = 3;
+  repeated uint32 retriable_status_codes = 7;
+  RetryBackOff retry_back_off = 8;
+  repeated data.HeaderMatcher retriable_headers = 9;
+  repeated data.HeaderMatcher retriable_request_headers = 10;
+  
+
+  reserved 4 to 6, 11 to 13;
+  reserved "host_selection_retry_max_attempts", "retry_options_predicates", "retry_host_predicate", "rate_limited_retry_back_off", "per_try_idle_timeout";
+}

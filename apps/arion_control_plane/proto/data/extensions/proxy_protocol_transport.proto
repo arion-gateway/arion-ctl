@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/proxy_protocol.proto";
+import "data/socket.proto";
+
+message ProxyProtocolUpstreamTransport {
+  // maps to "envoy.extensions.transport_sockets.proxy_protocol.v3.ProxyProtocolUpstreamTransport"
+  
+  data.ProxyProtocolConfig config = 1;
+  data.TransportSocket transport_socket = 2;
+}

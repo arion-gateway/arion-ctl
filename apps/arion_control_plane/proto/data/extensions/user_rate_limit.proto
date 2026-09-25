@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/extensions/rate_limit.proto";
+import "data/http_status.proto";
+
+message SimpleRateLimit {
+  // maps to "arion.extensions.filters.http.user_rate_limit.v3.SimpleRateLimit"
+
+  uint32 max_tokens = 1;
+  uint32 rate = 2;
+}
+
+message UserRateLimit {
+  // maps to "arion.extensions.filters.http.user_rate_limit.v3.UserRateLimit"
+
+  optional string user_id = 1;
+  oneof limit {
+    LocalRateLimit local_rate_limit = 2;
+    SimpleRateLimit simple_rate_limit = 3;
+  }
+}
+
+message UserRateLimiter {
+  // maps to "arion.extensions.filters.http.user_rate_limit.v3.UserRateLimiter"
+
+  string user_id_header_name = 1;
+  string stat_prefix = 2;
+   data.HttpStatus status = 3;
+  repeated UserRateLimit user_rate_limits = 4;
+}

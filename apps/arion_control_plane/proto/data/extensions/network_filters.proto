@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/config_source.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+message ConnectionLimit {
+  // maps to "envoy.extensions.filters.network.connection_limit.v3.ConnectionLimit"
+
+  string stat_prefix = 1;
+  google.protobuf.UInt64Value max_connections = 2;
+  google.protobuf.Duration delay = 3;
+
+  reserved 4;
+  reserved "runtime_enabled";
+}
+
+message RateLimitDescriptor {
+  // maps to "envoy.extensions.common.ratelimit.v3.RateLimitDescriptor"
+
+  message Entry {
+    string key = 1;
+    string value = 2;
+  }
+
+  repeated Entry entries = 1;
+
+  reserved 2 to 3;
+  reserved "limit", "hits_addend";
+}
+
+message RateLimitServiceConfig {
+  // maps to "envoy.config.ratelimit.v3.RateLimitServiceConfig"
+
+  data.GrpcService grpc_service = 2;
+
+  reserved 1, 3 to 4;
+  reserved "envoy_grpc", "transport_api_version";
+}
+
+message NetworkRateLimit {
+  // maps to "envoy.extensions.filters.network.ratelimit.v3.RateLimit"
+
+  string stat_prefix = 1;
+  string domain = 2;
+  repeated RateLimitDescriptor descriptors = 3;
+  bool failure_mode_deny = 5;
+  RateLimitServiceConfig rate_limit_service = 6;
+
+  reserved 4;
+  reserved "timeout";
+}

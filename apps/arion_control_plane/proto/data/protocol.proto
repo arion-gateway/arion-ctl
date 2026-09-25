@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package data;
+
+import "data/percent.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+enum RoutingPriority {
+  DEFAULT = 0;
+  HIGH = 1;
+}
+
+message HttpProtocolOptions {
+  // maps to "envoy.config.core.v3.Http1ProtocolOptions"
+
+  google.protobuf.Duration idle_timeout = 1;
+  google.protobuf.Duration max_connection_duration = 3;
+  google.protobuf.UInt32Value max_headers_count = 2;
+  google.protobuf.Duration max_stream_duration = 4;
+  google.protobuf.UInt32Value max_requests_per_connection = 6;
+
+  reserved 5;
+  reserved "headers_with_underscores_action";
+}
+
+message Http1ProtocolOptions {
+ // maps to "envoy.config.core.v3.Http1ProtocolOptions"
+
+  google.protobuf.BoolValue allow_absolute_url = 1;
+  bool enable_trailers = 5;
+
+  reserved 2 to 4, 6 to 10;
+  reserved "accept_http_10", "default_host_for_http_10", "header_key_format", "allow_chunked_length", "override_stream_error_on_invalid_http_message", "send_fully_qualified_url", "use_balsa_parser", "allow_custom_methods";
+}
+
+message KeepaliveSettings {
+  google.protobuf.Duration interval = 1;
+  google.protobuf.Duration timeout = 2;
+   data.Percent interval_jitter = 3;
+  google.protobuf.Duration connection_idle_interval = 4;
+}
+
+
+message Http2ProtocolOptions {
+  // maps to "envoy.config.core.v3.Http2ProtocolOptions"
+
+  message SettingsParameter {
+    google.protobuf.UInt32Value identifier = 1;
+    google.protobuf.UInt32Value value = 2;
+  }
+
+  google.protobuf.UInt32Value hpack_table_size = 1;
+  google.protobuf.UInt32Value max_concurrent_streams = 2;
+  google.protobuf.UInt32Value initial_stream_window_size = 3;
+  google.protobuf.UInt32Value initial_connection_window_size = 4;
+  bool allow_connect = 5;
+  google.protobuf.UInt32Value max_outbound_frames = 7;
+  google.protobuf.UInt32Value max_outbound_control_frames = 8;
+  google.protobuf.UInt32Value max_consecutive_inbound_frames_with_empty_payload = 9;
+  google.protobuf.UInt32Value max_inbound_priority_frames_per_stream = 10;
+  google.protobuf.UInt32Value max_inbound_window_update_frames_per_data_frame_sent = 11;
+  KeepaliveSettings connection_keepalive = 15;
+
+  reserved 6, 12 to 14, 16;
+  reserved "allow_metadata", "custom_settings_parameters", "use_oghttp2_codec", "stream_error_on_invalid_http_messaging", "override_stream_error_on_invalid_http_message";
+}
+
+
+message UpstreamHttpProtocolOptions {
+  // maps to "envoy.config.core.v3.UpstreamHttpProtocolOptions"
+
+  bool auto_sni = 1;
+  bool auto_san_validation = 2;
+  string override_auto_sni_header = 3;
+}

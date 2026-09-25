@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package endpoint;
+
+import "endpoint/endpoint_components.proto";
+
+message ClusterLoadAssignment {
+  // maps to "envoy.config.endpoint.v3.ClusterLoadAssignment"
+
+  string cluster_name = 1;
+  repeated LocalityLbEndpoints endpoints = 2;
+
+  reserved 4 to 5;
+  reserved "named_endpoints", "policy";
+}

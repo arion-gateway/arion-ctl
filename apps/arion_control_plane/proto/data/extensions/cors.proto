@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/string.proto";
+import "google/protobuf/wrappers.proto";
+
+message Cors {
+  // maps to "envoy.extensions.filters.http.cors.v3.Cors"
+}
+
+message CorsPolicy {
+  // maps to "envoy.extensions.filters.http.cors.v3.CorsPolicy"
+
+  repeated data.StringMatcher allow_origin_string_match = 1;
+  string allow_methods = 2;
+  string allow_headers = 3;
+  string expose_headers = 4;
+  string max_age = 5;
+  google.protobuf.BoolValue allow_credentials = 6;
+  google.protobuf.BoolValue forward_not_matching_preflights = 10;
+
+  reserved 7 to 9;
+  reserved "filter_enabled", "shadow_enabled", "allow_private_network_access";
+}

@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/data_source.proto";
+import "data/config_source.proto";
+import "data/string.proto";
+import "google/protobuf/wrappers.proto";
+
+message TlsParameters {
+  // maps to "envoy.extensions.transport_sockets.tls.v3.TlsParameters"
+
+  enum TlsProtocol {
+    TLS_AUTO = 0;
+    TLSv1_2 = 3;
+    TLSv1_3 = 4;
+
+    reserved 1 to 2;
+    reserved "TLSv1_0", "TLSv1_1";
+  }
+
+  TlsProtocol tls_minimum_protocol_version = 1;
+  TlsProtocol tls_maximum_protocol_version = 2;
+
+  reserved 3 to 5;
+  reserved "cipher_suites", "ecdh_curves", "signature_algorithms";
+}
+
+message TlsCertificate {
+  // maps to "envoy.extensions.transport_sockets.v3.TlsCertificate";
+
+   data.DataSource certificate_chain = 1;
+   data.DataSource private_key = 2;
+   data.DataSource pkcs12 = 8;
+   data.DataSource password = 3;
+
+  reserved 4 to 7;
+  reserved "ocsp_staple", "signed_certificate_timestamp", "private_key_provider", "watched_directory";
+}
+
+message SdsSecretConfig {
+  // maps to "envoy.extensions.transport_sockets.tls.v3.SdsSecretConfig"
+
+  string name = 1;
+   data.ConfigSource sds_config = 2;
+}
+
+message Secret {
+    // maps to "envoy.extensions.transport_sockets.tls.v3.Secret"
+
+  string name = 1;
+  oneof type {
+    TlsCertificate tls_certificate = 2;
+    CertificateValidationContext validation_context = 4;
+  }
+
+  reserved 3, 5;
+  reserved "session_ticket_keys", "generic_secret";
+}
+
+message CertificateValidationContext {
+  // maps to "envoy.extensions.transport_sockets.tls.v3.CertificateValidationContext"
+
+  enum TrustChainVerification {
+    VERIFY_TRUST_CHAIN = 0;
+    ACCEPT_UNTRUSTED = 1;
+  }
+
+   data.DataSource trusted_ca = 1;
+  TrustChainVerification trust_chain_verification = 10;
+  repeated SubjectAltNameMatcher match_typed_subject_alt_names = 15;
+
+  reserved 2 to 9, 12 to 14, 16;
+  reserved "max_verify_depth", "only_verify_leaf_cert_crl", "custom_validator_config", "allow_expired_certificate", "crl", "require_signed_certificate_timestamp", "match_subject_alt_names", "verify_certificate_spki", "verify_certificate_hash", "verify_subject_alt_name", "ca_certificate_provider_instance", "watched_directory";
+}
+
+message SubjectAltNameMatcher {
+  enum SanType {
+    SAN_TYPE_UNSPECIFIED = 0;
+    EMAIL = 1;
+    DNS = 2;
+    URI = 3;
+    IP_ADDRESS = 4;
+  }
+
+  SanType san_type = 1;
+   data.StringMatcher matcher = 2;
+}
+
+
+message CommonTlsContext {
+  // maps to "envoy.extensions.transport_sockets.tls.v3.CommonTlsContext"
+
+  TlsParameters tls_params = 1;
+  repeated TlsCertificate tls_certificates = 2;
+  repeated SdsSecretConfig tls_certificate_sds_secret_configs = 6;
+
+  oneof validation_context_type {
+    CertificateValidationContext validation_context = 3;
+    SdsSecretConfig validation_context_sds_secret_config = 7;
+  }
+  repeated string alpn_protocols = 4;
+
+  reserved 5, 8, 12 to 15;
+  reserved "combined_validation_context", "validation_context_certificate_provider", "validation_context_certificate_provider_instance", "tls_certificate_provider_instance", "tls_certificate_certificate_provider", "tls_certificate_certificate_provider_instance", "custom_handshaker", "key_log";
+}
+
+
+message UpstreamTlsContext {
+  // maps to "envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext"
+
+  CommonTlsContext common_tls_context = 1;
+  string sni = 2;
+
+  reserved 3 to 5;
+  reserved "allow_renegotiation", "max_session_keys", "enforce_rsa_key_usage";
+}
+
+message DownstreamTlsContext {
+  // maps to "envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext"
+
+  CommonTlsContext common_tls_context = 1;
+  google.protobuf.BoolValue require_client_certificate = 2;
+
+  reserved 4 to 10;
+  reserved "session_ticket_keys", "session_ticket_keys_sds_secret_config", "require_sni", "disable_stateless_session_resumption", "disable_stateful_session_resumption", "session_timeout", "ocsp_staple_policy", "full_scan_certs_on_sni_mismatch";
+}

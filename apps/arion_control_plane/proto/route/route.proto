@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package route;
+
+import "data/headers.proto";
+import "route/route_components.proto";
+
+
+message RouteConfiguration {
+  // maps to "envoy.config.route.v3.RouteConfiguration";
+
+  string name = 1;
+  repeated VirtualHost virtual_hosts = 2;
+  repeated  data.HeaderValueOption response_headers_to_add = 4;
+  repeated string response_headers_to_remove = 5;
+  repeated  data.HeaderValueOption request_headers_to_add = 6;
+  repeated string request_headers_to_remove = 8;
+  bool most_specific_header_mutations_wins = 10;
+
+
+  reserved  3, 9, 11 to 17;
+  reserved "vhds", "internal_only_headers", "validate_clusters", "max_direct_response_body_size_bytes", "cluster_specifier_plugins", "request_mirror_policies", "ignore_port_in_host_matching", "ignore_path_parameters_in_path_matching", "typed_per_filter_config", "metadata";
+}

@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package filter;
+
+import "route/route.proto";
+import "data/percent.proto";
+import "data/protocol.proto";
+import "data/config_source.proto";
+import "data/extensions/accesslog.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+message HttpConnectionManager {
+  // maps to "envoy.extensions.network.http.v3.HttpConnectionManager"
+
+  enum CodecType {
+    AUTO = 0;
+    HTTP1 = 1;
+    HTTP2 = 2;
+    HTTP3 = 3;
+  }
+
+  message Tracing {
+    // maps to "envoy.extensions.network.http.v3.HttpConnectionManager.Tracing"
+
+    message Provider {
+      // maps to "envoy.config.trace.v3.Tracing.Http"
+
+      string name = 1;
+      oneof config_type {
+        google.protobuf.Any typed_config = 3;
+      }
+
+      reserved 2;
+      reserved "config";
+    }
+
+     data.Percent client_sampling = 3;
+     data.Percent random_sampling = 4;
+     data.Percent overall_sampling = 5;
+    bool verbose = 6;
+    google.protobuf.UInt32Value max_path_tag_length = 7;
+    Provider provider = 9;
+    google.protobuf.BoolValue spawn_upstream_span = 10;
+
+    reserved 1 to 2, 8;
+    reserved "operation_name", "request_headers_for_tags", "custom_tags";
+  }
+
+  message UpgradeConfig {
+    // maps to "envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager.UpgradeConfig"
+
+    string upgrade_type = 1;
+    google.protobuf.BoolValue enabled = 3;
+
+    reserved 2;
+    reserved "filters";
+  }
+
+  CodecType codec_type = 1;
+  string stat_prefix = 2;
+  oneof route_specifier {
+    Rds rds = 3;
+     route.RouteConfiguration route_config = 4;
+  }
+  repeated HttpFilter http_filters = 5;
+  Tracing tracing = 7;
+   data.Http1ProtocolOptions http_protocol_options = 8;
+   data.Http2ProtocolOptions http2_protocol_options = 9;
+  repeated  data.extensions.AccessLog access_log = 13;
+  google.protobuf.BoolValue use_remote_address = 14;
+  google.protobuf.BoolValue generate_request_id = 15;
+  uint32 xff_num_trusted_hops = 19;
+  bool skip_xff_append = 21;
+  repeated UpgradeConfig upgrade_configs = 23;
+  google.protobuf.Duration request_timeout = 28;
+  bool preserve_external_request_id = 32;
+  bool always_set_request_id_in_response = 37;
+
+  reserved 6, 10 to 12, 16 to 18, 20, 22, 24 to 27, 29 to 31, 33 to 35, 38 to 56;
+  reserved "scoped_routes", "drain_timeout", "via", "internal_address_config", "stream_idle_timeout", "add_user_agent", "server_name", "idle_timeout", "server_header_transformation", "common_http_protocol_options", "http3_protocol_options", "scheme_header_transformation", "max_request_headers_kb", "request_headers_timeout", "delayed_close_timeout", "access_log_flush_interval", "flush_access_log_on_new_request", "access_log_options", "original_ip_detection_extensions", "early_header_mutation_extensions", "forward_client_cert_details", "set_current_client_cert_details", "proxy_100_continue", "represent_ipv4_remote_address_as_ipv4_mapped_ipv6", "normalize_path", "merge_slashes", "path_with_escaped_slashes_action", "request_id_extension", "local_reply_config", "strip_matching_host_port", "strip_any_host_port", "stream_error_on_invalid_http_message", "path_normalization_options", "strip_trailing_host_dot", "proxy_status_config", "typed_header_validation_config", "append_x_forwarded_port", "add_proxy_protocol_connection_state";
+}
+
+message Rds {
+  // maps to "envoy.extensions.network.http.v3.HttpConnectionManager.Rds"
+
+   data.ConfigSource config_source = 1;
+  string route_config_name = 2;
+}
+
+
+message HttpFilter {
+  // maps to "envoy.extensions.network.http.v3.HttpConnectionManager.HttpFilter"
+
+  string name = 1;
+  oneof config_type {
+    google.protobuf.Any typed_config = 4;
+  }
+
+  reserved 3, 2, 5 to 7;
+  reserved "disabled", "is_optional", "config", "config_discovery";
+}

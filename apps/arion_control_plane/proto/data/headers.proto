@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package data;
+
+import "data/regex.proto";
+import "data/range.proto";
+import "data/string.proto";
+
+message HeaderMatcher {
+  // maps to "envoy.config.route.v3.HeaderMatcher";
+
+  string name = 1;
+  oneof header_match_specifier {
+    string exact_match = 4;
+     data.RegexMatcher safe_regex_match = 11;
+     data.Int64Range range_match = 6;
+    bool present_match = 7;
+     data.StringMatcher string_match = 13;
+  }
+  bool invert_match = 8;
+
+  reserved 2, 3, 5, 9 to 10, 12, 14;
+  reserved "regex_match", "treat_missing_header_as_empty", "suffix_match", "contains_match", "prefix_match";
+}
+
+message HeaderValue {
+  // maps to "envoy.core.v3.HeaderValue"
+
+  string key = 1;
+  string value = 2;
+
+  reserved 3;
+  reserved "raw_value";
+}
+
+message HeaderValueOption {
+  // maps to "envoy.core.v3.HeaderValueOption"
+
+  enum HeaderAppendAction {
+    APPEND_IF_EXISTS_OR_ADD = 0;
+    ADD_IF_ABSENT = 1;
+    OVERWRITE_IF_EXISTS_OR_ADD = 2;
+    OVERWRITE_IF_EXISTS = 3;
+  }
+
+  HeaderValue header = 1;
+  HeaderAppendAction append_action = 3;
+
+  reserved 2, 4;
+  reserved "append", "keep_empty_value";
+}

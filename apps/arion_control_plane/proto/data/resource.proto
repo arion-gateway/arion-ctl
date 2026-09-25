@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package data;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+
+message Resource {
+  //maps to "envoy.api.v2.Resource";
+
+  string name = 3;
+  string version = 1;
+  google.protobuf.Any resource = 2;
+  google.protobuf.Duration ttl = 6;
+
+  reserved 4, 7, 8, 9;
+  reserved "previous_message_type", "resource_name", "aliases", "cache_control", "metadata";
+}

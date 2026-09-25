@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/protocol.proto";
+
+message HttpProtocolOptions {
+  // maps to "envoy.extensions.upstreams.http.v3.HttpProtocolOptions"
+
+  message ExplicitHttpConfig {
+    oneof protocol_config {
+       data.Http1ProtocolOptions http_protocol_options = 1;
+       data.Http2ProtocolOptions http2_protocol_options = 2;
+    }
+
+    reserved 3;
+    reserved "http3_protocol_options";
+  }
+   
+  message UseDownstreamHttpConfig {
+     data.Http1ProtocolOptions http_protocol_options = 1;
+     data.Http2ProtocolOptions http2_protocol_options = 2;
+
+    reserved 3;
+    reserved "http3_protocol_options";
+  }
+ 
+  message AutoHttpConfig {
+     data.Http1ProtocolOptions http_protocol_options = 1;
+     data.Http2ProtocolOptions http2_protocol_options = 2;
+
+    reserved 3, 4;
+    reserved "http3_protocol_options", "alternate_protocols_cache_options";
+  }
+
+
+   data.HttpProtocolOptions common_http_protocol_options = 1;
+   data.UpstreamHttpProtocolOptions upstream_http_protocol_options = 2;
+  oneof upstream_protocol_options {
+    ExplicitHttpConfig explicit_http_config = 3;
+    UseDownstreamHttpConfig use_downstream_protocol_config = 4;
+    AutoHttpConfig auto_config = 5;
+  }
+
+  reserved 6 to 7;
+  reserved "http_filters", "header_validation_config";
+}

@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package cluster;
+
+import "data/address.proto";
+import "data/config_source.proto";
+import "data/health_check.proto";
+import "data/metadata.proto";
+import "data/socket.proto";
+import "data/extensions/lb_policy.proto";
+import "endpoint/endpoint.proto";
+import "cluster/outlier_detection.proto";
+import "cluster/circuit_breaker.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+message Cluster {
+  // maps to "envoy.config.cluster.v3.Cluster"
+
+  enum DiscoveryType {
+    STATIC = 0;
+    STRICT_DNS = 1;
+    EDS = 3;
+    ORIGINAL_DST = 4;
+
+    reserved 2;
+    reserved "LOGICAL_DNS";
+  }
+
+  enum LbPolicy {
+    ROUND_ROBIN = 0;
+    LEAST_REQUEST = 1;
+    RING_HASH = 2;
+    RANDOM = 3;
+    MAGLEV = 5;
+    CLUSTER_PROVIDED = 6;
+
+    reserved 4, 7;
+    reserved "ORIGINAL_DST_LB", "LOAD_BALANCING_POLICY_CONFIG";
+  }
+
+  message OriginalDstLbConfig {
+    // maps to "envoy.config.cluster.v3.Cluster.OriginalDstLbConfig"
+
+    bool use_http_header = 1;
+    string http_header_name = 2;
+    google.protobuf.UInt32Value upstream_port_override = 3;
+    data.MetadataKey metadata_key = 4;
+  }
+
+  message EdsClusterConfig {
+    // maps to "envoy.config.cluster.v3.Cluster.EdsClusterConfig";
+
+     data.ConfigSource eds_config = 1;
+
+    reserved 2;
+    reserved "service_name";
+  }
+
+  string name = 1;
+  oneof cluster_discovery_type {
+    DiscoveryType type = 2;
+  }
+  EdsClusterConfig eds_cluster_config = 3;
+  google.protobuf.Duration connect_timeout = 4;
+  LbPolicy lb_policy = 6;
+   endpoint.ClusterLoadAssignment load_assignment = 33;
+  repeated  data.HealthCheck health_checks = 8;
+  CircuitBreakers circuit_breakers = 10;
+  map<string, google.protobuf.Any> typed_extension_protocol_options = 36;
+  OutlierDetection outlier_detection = 19;
+   data.BindConfig upstream_bind_config = 21;
+   data.TransportSocket transport_socket = 24;
+  google.protobuf.Duration cleanup_interval = 20;
+  oneof lb_config {
+    OriginalDstLbConfig original_dst_lb_config = 34;
+  }
+  data.extensions.LoadBalancingPolicy load_balancing_policy = 41;
+
+  reserved 5, 7, 9, 11 to 14, 15 to 18, 22 to 23, 25 to 29, 30 to 32, 35, 37 to 40, 42 to 56;
+  reserved "dns_refresh_rate", "respect_dns_ttl", "dns_failure_refresh_rate", "http2_protocol_options", "http_protocol_options", "common_http_protocol_options", "upstream_http_protocol_options", "max_requests_per_connection", "per_connection_buffer_limit_bytes", "cluster_type", "alt_stat_name", "transport_socket_matches", "hosts", "tls_context", "extension_protocol_options", "dns_lookup_family", "dns_resolvers", "use_tcp_for_dns_lookups", "dns_resolution_config", "typed_dns_resolver_config", "wait_for_warm_on_init", "lb_subset_config", "ring_hash_lb_config", "maglev_lb_config", "least_request_lb_config", "round_robin_lb_config", "common_lb_config", "metadata", "protocol_selection", "upstream_connection_options", "close_connections_on_host_health_failure", "ignore_health_on_host_removal", "filters", "lrs_server", "track_timeout_budgets", "upstream_config", "track_cluster_stats", "preconnect_policy", "connection_pool_per_downstream_connection";
+}

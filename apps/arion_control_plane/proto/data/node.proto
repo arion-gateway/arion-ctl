@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package data;
+
+message Locality {
+  // maps to "envoy.core.v3.Locality";
+
+  string region = 1;
+  string zone = 2;
+  string sub_zone = 3;
+}
+
+message Node {
+  // maps to "envoy.core.v3.Node";
+
+  string id = 1;
+  string cluster = 2;
+  Locality locality = 4;
+  string user_agent_name = 6;
+
+  reserved 3, 5, 7 to 12;
+  reserved "metadata", "build_version", "extensions", "client_features", "listening_addresses", "dynamic_parameters";
+}

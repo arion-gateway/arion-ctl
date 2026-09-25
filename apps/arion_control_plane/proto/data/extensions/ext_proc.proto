@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package data.extensions;
+
+import "data/config_source.proto";
+import "data/regex.proto";
+import "data/string.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+message ProcessingMode {
+  // maps to "envoy.extensions.filters.http.ext_proc.v3.ProcessingMode"
+
+  enum HeaderSendMode {
+    DEFAULT = 0;
+    SEND = 1;
+    SKIP = 2;
+  }
+
+  enum BodySendMode {
+    NONE = 0;
+    STREAMED = 1;
+    BUFFERED = 2;
+    BUFFERED_PARTIAL = 3;
+    FULL_DUPLEX_STREAMED = 4;
+    GRPC = 5;
+  }
+
+  HeaderSendMode request_header_mode = 1;
+  HeaderSendMode response_header_mode = 2;
+  BodySendMode request_body_mode = 3;
+  BodySendMode response_body_mode = 4;
+  HeaderSendMode request_trailer_mode = 5;
+  HeaderSendMode response_trailer_mode = 6;
+}
+
+message HeaderMutationRules {
+  // maps to "envoy.config.common.mutation_rules.v3.HeaderMutationRules"
+
+  google.protobuf.BoolValue allow_all_routing = 1;
+  google.protobuf.BoolValue allow_envoy = 2;
+  google.protobuf.BoolValue disallow_system = 3;
+  google.protobuf.BoolValue disallow_all = 4;
+   data.RegexMatcher allow_expression = 5;
+   data.RegexMatcher disallow_expression = 6;
+  google.protobuf.BoolValue disallow_is_error = 7;
+}
+
+message ListStringMatcher {
+  // maps to "envoy.type.matcher.v3.ListStringMatcher"
+
+  repeated data.StringMatcher patterns = 1;
+}
+
+message HeaderForwardingRules {
+  // maps to "envoy.extensions.filters.http.ext_proc.v3.HeaderForwardingRules"
+
+  ListStringMatcher allowed_headers = 1;
+  ListStringMatcher disallowed_headers = 2;
+}
+
+message MetadataOptions {
+  // maps to "envoy.extensions.filters.http.ext_proc.v3.MetadataOptions"
+
+  message MetadataNamespaces {
+    repeated string untyped = 1;
+
+    reserved 2;
+    reserved "typed";
+  }
+
+  MetadataNamespaces forwarding_namespaces = 1;
+
+  reserved 2, 3;
+  reserved "receiving_namespaces", "cluster_metadata_forwarding_namespaces";
+}
+
+message ExternalProcessor {
+  // maps to "envoy.extensions.filters.http.ext_proc.v3.ExternalProcessor"
+
+  enum RouteCacheAction {
+    DEFAULT = 0;
+    CLEAR = 1;
+    RETAIN = 2;
+  }
+
+  data.GrpcService grpc_service = 1;
+  bool failure_mode_allow = 2;
+  ProcessingMode processing_mode = 3;
+  google.protobuf.Duration message_timeout = 7;
+  HeaderMutationRules mutation_rules = 9;
+  google.protobuf.Duration max_message_timeout = 10;
+  HeaderForwardingRules forward_rules = 12;
+  bool allow_mode_override = 14;
+  bool disable_immediate_response = 15;
+  MetadataOptions metadata_options = 16;
+  bool observability_mode = 17;
+  RouteCacheAction route_cache_action = 18;
+  google.protobuf.Duration deferred_close_timeout = 19;
+  bool send_body_without_waiting_for_header_response = 21;
+  repeated ProcessingMode allowed_override_modes = 22;
+
+  reserved 4 to 6, 8, 11, 13, 20, 23 to 25;
+  reserved "async_mode", "request_attributes", "response_attributes", "stat_prefix", "disable_clear_route_cache", "filter_metadata", "http_service", "on_processing_response", "status_on_error", "processing_request_modifier";
+}
+
+message ExtProcPerRoute {
+  // maps to "envoy.extensions.filters.http.ext_proc.v3.ExtProcPerRoute"
+
+  oneof override {
+    bool disabled = 1;
+    ExtProcOverrides overrides = 2;
+  }
+}
+
+message ExtProcOverrides {
+  // maps to "envoy.extensions.filters.http.ext_proc.v3.ExtProcOverrides"
+
+  ProcessingMode processing_mode = 1;
+  data.GrpcService grpc_service = 5;
+  google.protobuf.BoolValue failure_mode_allow = 8;
+
+  reserved 2 to 4, 6 to 7, 9;
+  reserved "async_mode", "request_attributes", "response_attributes", "metadata_options", "grpc_initial_metadata", "processing_request_modifier";
+}

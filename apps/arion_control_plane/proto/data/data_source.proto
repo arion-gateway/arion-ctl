@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package data;
+
+message DataSource {
+  // maps to "envoy.core.v3.DataSource"
+
+  oneof specifier {
+    string filename = 1;
+    bytes inline_bytes = 2;
+    string inline_string = 3;
+    string environment_variable = 4;
+  }
+}

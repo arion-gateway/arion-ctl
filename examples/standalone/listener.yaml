@@ -1,0 +1,30 @@
+apiVersion: ctl.arion.io/v1alpha1
+kind: Listener
+metadata:
+  name: hello
+  fleet: arion
+spec:
+  address:
+    socketAddress: {address: 127.0.0.1, portValue: 8080}
+  filterChains:
+    - name: http
+      filters:
+        - name: http
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+            statPrefix: hello
+            codecType: HTTP1
+            routeConfig:
+              name: hello
+              virtualHosts:
+                - name: all
+                  domains: ['*']
+                  routes:
+                    - match: {prefix: /}
+                      directResponse:
+                        status: 200
+                        body: {inlineString: 'Hello from Arion!'}
+            httpFilters:
+              - name: envoy.filters.http.router
+                typedConfig:
+                  '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router

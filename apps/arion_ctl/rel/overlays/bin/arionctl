@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+ARION_CTL_RELEASE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/arion_ctl"
+export ARION_CTL_RELEASE
+case "${1:-}" in
+  serve) shift; [ "$#" -eq 0 ] || { echo 'configure serve with ARION_CTL_PORT and ARION_CTL_STATE_DIR' >&2; exit 2; }; exec "$ARION_CTL_RELEASE" start ;;
+  shell) exec "$ARION_CTL_RELEASE" remote ;;
+  --help|-h|'') echo 'arionctl serve | shell | validate -f FILE | apply -f FILE | delete -f FILE | delete KIND NAME [--fleet FLEET] | get [--fleet FLEET] | status'; exit 0 ;;
+esac
+ARION_CTL_ARGS=$(printf '%s\0' "$@" | base64 | tr -d '\n')
+export ARION_CTL_ARGS
+exec "$ARION_CTL_RELEASE" eval 'Arion.Ctl.CLI.main_from_env()'

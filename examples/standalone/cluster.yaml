@@ -1,0 +1,17 @@
+apiVersion: ctl.arion.io/v1alpha1
+kind: Cluster
+metadata:
+  name: backend
+  fleet: arion
+spec:
+  type: STATIC
+  connectTimeout: 1s
+  loadAssignment:
+    clusterName: backend
+    endpoints:
+      - lbEndpoints:
+          - endpoint:
+              address:
+                socketAddress:
+                  address: 127.0.0.1
+                  portValue: 8080

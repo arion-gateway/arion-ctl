@@ -1,0 +1,16 @@
+{{- if not .Values.cookie.existingSecret }}
+{{- $name := include "arion.cookie" . }}
+{{- $existing := lookup "v1" "Secret" .Release.Namespace $name }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+data:
+  {{- if and $existing $existing.data }}
+  cookie: {{ required "existing cookie Secret needs data.cookie" (index $existing.data "cookie") | quote }}
+  {{- else }}
+  cookie: {{ randAlphaNum 64 | b64enc | quote }}
+  {{- end }}
+{{- end }}

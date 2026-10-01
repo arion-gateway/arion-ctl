@@ -1,0 +1,52 @@
+# Optional parametersRef target for Arion-managed Gateway data planes.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: ariongatewayparameters.arion.io
+spec:
+  group: arion.io
+  scope: Namespaced
+  names:
+    kind: ArionGatewayParameters
+    listKind: ArionGatewayParametersList
+    plural: ariongatewayparameters
+    singular: ariongatewayparameters
+    shortNames:
+      - agp
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                  description: Arion data-plane container image.
+                replicas:
+                  type: integer
+                  minimum: 0
+                  description: Replica count for the provisioned Deployment.
+                serviceType:
+                  type: string
+                  enum: ["LoadBalancer", "ClusterIP", "NodePort"]
+                  description: Service type for the provisioned data plane.
+                selfManaged:
+                  type: boolean
+                  description: When true, skip provisioning; the user manages Arion themselves.
+                labels:
+                  type: object
+                  additionalProperties:
+                    type: string
+                annotations:
+                  type: object
+                  additionalProperties:
+                    type: string
+                resources:
+                  type: object
+                  description: Container resource requirements (requests/limits).
+                  x-kubernetes-preserve-unknown-fields: true

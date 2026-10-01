@@ -1,0 +1,26 @@
+replicaCount: 2
+image:
+  repository: ghcr.io/arion-gateway/arion-ctl-controller
+  # Defaults to the chart appVersion.
+  tag: ""
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+dataPlane:
+  image: ghcr.io/arion-gateway/arion:0.1.0
+controllerName: arion.io/gateway-controller
+gatewayClass:
+  create: true
+  name: arion
+leaderElection: true
+cookie:
+  existingSecret: ""
+controlPlanePort: 50051
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+nodeSelector: {}
+tolerations: []
+affinity: {}

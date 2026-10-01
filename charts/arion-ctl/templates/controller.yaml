@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "arion.name" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "arion.selector" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "arion.selector" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "arion.name" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: controller
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: GATEWAY_CONTROLLER_NAME
+              value: {{ .Values.controllerName | quote }}
+            - name: GATEWAY_LEADER_ELECTION
+              value: {{ .Values.leaderElection | quote }}
+            - name: GATEWAY_ARION_IMAGE
+              value: {{ .Values.dataPlane.image | quote }}
+            - name: GATEWAY_CONTROL_PLANE_PORT
+              value: {{ .Values.controlPlanePort | quote }}
+            - name: GATEWAY_ADS_SERVICE
+              value: {{ include "arion.name" . }}-ads
+            - name: GATEWAY_ADS_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: GATEWAY_CLUSTER_SELECTOR
+              value: {{ include "arion.labelSelector" . }},service.kubernetes.io/headless
+            - name: GATEWAY_CLUSTER_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: GATEWAY_CLUSTER_POD_BASENAME
+              value: arion
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ERL_DIST_PORT
+              value: "9100"
+            - name: RELEASE_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "arion.cookie" . }}
+                  key: cookie
+          ports:
+            - {name: ads, containerPort: {{ .Values.controlPlanePort }}}
+            - {name: distribution, containerPort: 9100}
+            - {name: epmd, containerPort: 4369}
+          # ADS is bound only after every watched kind is listed and published.
+          startupProbe:
+            tcpSocket: {port: ads}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            tcpSocket: {port: ads}
+          livenessProbe:
+            tcpSocket: {port: ads}
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "arion.name" . }}-ads
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    {{- include "arion.selector" . | nindent 4 }}
+  ports:
+    - {name: ads, port: {{ .Values.controlPlanePort }}, targetPort: ads}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "arion.name" . }}-headless
+  namespace: {{ .Release.Namespace }}
+  # Copied to its Endpoints, where replicas find each other.
+  labels:
+    {{- include "arion.selector" . | nindent 4 }}
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    {{- include "arion.selector" . | nindent 4 }}
+  ports:
+    - {name: distribution, port: 9100, targetPort: distribution}
+    - {name: epmd, port: 4369, targetPort: epmd}

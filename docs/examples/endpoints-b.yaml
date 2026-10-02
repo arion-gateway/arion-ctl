@@ -1,0 +1,9 @@
+apiVersion: ctl.arion.io/v1alpha1
+kind: ClusterLoadAssignment
+metadata: {name: backend, fleet: arion}
+spec:
+  endpoints:
+    - lbEndpoints:
+        - endpoint:
+            address:
+              socketAddress: {address: 127.0.0.1, portValue: 18082}

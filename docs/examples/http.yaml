@@ -1,0 +1,44 @@
+apiVersion: ctl.arion.io/v1alpha1
+kind: Cluster
+metadata:
+  name: backend
+  fleet: arion
+spec:
+  type: STATIC
+  connectTimeout: 1s
+  loadAssignment:
+    clusterName: backend
+    endpoints:
+      - lbEndpoints:
+          - endpoint:
+              address:
+                socketAddress: {address: 127.0.0.1, portValue: 18081}
+---
+apiVersion: ctl.arion.io/v1alpha1
+kind: Listener
+metadata:
+  name: http
+  fleet: arion
+spec:
+  address:
+    socketAddress: {address: 127.0.0.1, portValue: 18080}
+  filterChains:
+    - name: http
+      filters:
+        - name: envoy.filters.network.http_connection_manager
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+            statPrefix: docs
+            codecType: HTTP1
+            routeConfig:
+              name: http-routes
+              virtualHosts:
+                - name: all
+                  domains: ['*']
+                  routes:
+                    - match: {prefix: /}
+                      route: {cluster: backend}
+            httpFilters:
+              - name: envoy.filters.http.router
+                typedConfig:
+                  '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router

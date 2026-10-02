@@ -1,0 +1,25 @@
+# Used by: arion --with-envoy-bootstrap docs/examples/bootstrap.yaml
+node:
+  id: arion/docs
+  cluster: arion
+dynamic_resources:
+  ads_config:
+    grpc_services:
+      - envoy_grpc: {cluster_name: xds}
+static_resources:
+  clusters:
+    - name: xds
+      type: STATIC
+      connect_timeout: 1s
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          '@type': type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
+      load_assignment:
+        cluster_name: xds
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address: {address: 127.0.0.1, port_value: 15051}

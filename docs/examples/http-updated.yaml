@@ -1,0 +1,33 @@
+# Updates only the listener; the existing backend Cluster remains.
+apiVersion: ctl.arion.io/v1alpha1
+kind: Listener
+metadata:
+  name: http
+  fleet: arion
+spec:
+  address:
+    socketAddress: {address: 127.0.0.1, portValue: 18080}
+  filterChains:
+    - name: http
+      filters:
+        - name: envoy.filters.network.http_connection_manager
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+            statPrefix: docs
+            codecType: HTTP1
+            routeConfig:
+              name: http-routes
+              virtualHosts:
+                - name: all
+                  domains: ['*']
+                  routes:
+                    - match: {prefix: /hello}
+                      route: {cluster: backend, prefixRewrite: /}
+                    - match: {prefix: /}
+                      directResponse:
+                        status: 404
+                        body: {inlineString: 'No route'}
+            httpFilters:
+              - name: envoy.filters.http.router
+                typedConfig:
+                  '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router

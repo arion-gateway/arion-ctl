@@ -1,0 +1,14 @@
+apiVersion: ctl.arion.io/v1alpha1
+kind: RouteConfiguration
+metadata: {name: http-routes, fleet: arion}
+spec:
+  virtualHosts:
+    - name: all
+      domains: ['*']
+      routes:
+        - match: {prefix: /hello}
+          route: {cluster: backend, prefixRewrite: /}
+        - match: {prefix: /}
+          directResponse:
+            status: 404
+            body: {inlineString: 'No route'}

@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+task_tmp=$(mktemp -d)
+trap 'rm -rf "$task_tmp"' EXIT
+export ARION_CTL_TAG="${ARION_CTL_TAG:-v0.1.0}"
+cat > "$task_tmp/mix.exs" <<'ELIXIR'
+defmodule Consumer.MixProject do
+  use Mix.Project
+  def project do
+    dependency = case System.get_env("ARION_CTL_PATH") do
+      nil -> {:arion_control_plane, git: "https://github.com/arion-gateway/arion-ctl.git", tag: System.fetch_env!("ARION_CTL_TAG"), subdir: "apps/arion_control_plane"}
+      path -> {:arion_control_plane, path: Path.join(path, "apps/arion_control_plane")}
+    end
+    [app: :consumer, version: "0.0.1", deps: [dependency]]
+  end
+end
+ELIXIR
+cd "$task_tmp"
+mix deps.get
+mix run -e '
+  {:ok, _} = Arion.ControlPlane.start_link(serve?: false)
+  false = Enum.any?(Application.loaded_applications(), fn {name, _, _} -> name == :kino end)
+  cluster = Arion.ControlPlane.Helpers.Cluster.static("example", "localhost", [8080])
+  :ok = Arion.ControlPlane.Service.replace("fleet", [{:cluster, cluster}])
+  %{cluster: %{"example" => _}} = Arion.ControlPlane.Service.resources("fleet")
+  IO.puts("external consumer passed")
+'

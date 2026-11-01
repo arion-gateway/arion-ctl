@@ -77,7 +77,8 @@ defmodule Arion.ControlPlane.AdsServerTest do
     GRPC.Stub.cancel(stream)
   end
 
-  test "a stream is bound to the fleet of its first request", %{channel: channel} do
+  test "a fresh subscription waits for the first publication on the same stream",
+       %{channel: channel} do
     # Without a node the default fleet is selected, which has nothing published.
     stream =
       channel
@@ -86,9 +87,23 @@ defmodule Arion.ControlPlane.AdsServerTest do
         type_url: ResourceTypes.type_url!(:cluster)
       })
 
-    unavailable = GRPC.Status.unavailable()
-    assert {:error, %GRPC.RPCError{status: ^unavailable}} = GRPC.Stub.recv(stream, timeout: 2_000)
+    # Wait for the server to register the empty subscription before publishing.
+    assert eventually(fn -> map_size(Service.acks()) == 1 end)
+    [handler] = Map.keys(Service.acks())
+    assert Service.resources().cluster == %{}
 
+    Service.push(:cluster, Cluster.static("later", "127.0.0.1", [80]))
+    {:ok, replies} = GRPC.Stub.recv(stream, timeout: 2_000)
+
+    assert [{:ok, %{nonce: "1", resources: [%{name: "later", version: version}]}}] =
+             Enum.take(replies, 1)
+
+    respond(stream, "1", nil)
+    assert eventually(fn -> match?(%{"later" => {:ack, ^version}}, clusters(handler)) end)
+    GRPC.Stub.cancel(stream)
+  end
+
+  test "a stream is bound to the fleet of its first request", %{channel: channel} do
     {stream, replies} = subscribe(channel)
     assert [{:ok, %{nonce: "1"}}] = Enum.take(replies, 1)
 
@@ -142,7 +157,10 @@ defmodule Arion.ControlPlane.AdsServerTest do
   test "a fleet crash ends the stream with UNAVAILABLE, as does reconnecting before a republish",
        %{channel: channel} do
     {_stream, replies} = subscribe(channel)
-    assert [{:ok, _}] = Enum.take(replies, 1)
+
+    assert [{:ok, %{resources: [%{name: "backend", version: held_version}]}}] =
+             Enum.take(replies, 1)
+
     handler = handler()
     ref = Process.monitor(handler)
 
@@ -154,7 +172,7 @@ defmodule Arion.ControlPlane.AdsServerTest do
 
     # The restarted fleet has nothing published: the proxy keeps what it holds and retries.
     assert eventually(fn -> Service.list_fleets() == [@fleet] end)
-    stream = send_subscription(channel)
+    stream = send_subscription(channel, %{"backend" => held_version})
     assert {:error, %GRPC.RPCError{status: ^unavailable}} = GRPC.Stub.recv(stream, timeout: 2_000)
 
     :ok = Service.replace(@fleet, [{:cluster, Cluster.static("backend", "127.0.0.1", [80])}])
@@ -227,12 +245,13 @@ defmodule Arion.ControlPlane.AdsServerTest do
     {stream, replies}
   end
 
-  defp send_subscription(channel) do
+  defp send_subscription(channel, initial_versions \\ %{}) do
     channel
     |> Stub.delta_aggregated_resources()
     |> GRPC.Stub.send_request(%DeltaDiscoveryRequest{
       node: %Node{id: "proxy", cluster: @fleet},
-      type_url: ResourceTypes.type_url!(:cluster)
+      type_url: ResourceTypes.type_url!(:cluster),
+      initial_resource_versions: initial_versions
     })
   end
 

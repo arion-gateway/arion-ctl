@@ -799,16 +799,6 @@ defmodule Arion.ControlPlane.FleetTest do
     assert_receive {:"$gen_cast", {:publish, :cluster, [^wire]}}
   end
 
-  test "a fleet that has nothing published yet refuses subscriptions" do
-    subscribe("fleet-a", :cluster)
-    assert_receive {:"$gen_cast", {:unavailable, _message}}
-    refute_receive {:"$gen_cast", {:unpublish, _, _}}
-
-    :ok = Service.replace("fleet-a", [])
-    subscribe("fleet-a", :cluster, %{"stale" => "1"})
-    assert_receive {:"$gen_cast", {:unpublish, :cluster, ["stale"]}}
-  end
-
   test "a repeated subscription on one stream sends nothing" do
     Service.push("fleet-a", :cluster, cluster("cluster-a"))
     subscribe("fleet-a", :cluster)

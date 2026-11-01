@@ -21,8 +21,9 @@ defmodule Arion.ControlPlane.Fleet do
   Processes start on demand through `Arion.ControlPlane.Service.ensure/1` and
   stop through `Arion.ControlPlane.Service.retire/1`. A retired process exits
   normally and is not restarted; a crashed one is, empty. Until its owner
-  publishes again it refuses subscriptions, so a proxy reconnecting with the
-  resources it holds is not told to remove them.
+  publishes again it refuses subscriptions reporting held resource versions,
+  so a reconnecting proxy is not told to remove them. Subscriptions without
+  held versions stay open and receive resources when they are published.
   """
 
   use GenServer, restart: :transient
@@ -121,7 +122,8 @@ defmodule Arion.ControlPlane.Fleet do
       else: {:noreply, state}
   end
 
-  defp subscribe(%__MODULE__{published?: false} = state, _kind, client, _initial_versions) do
+  defp subscribe(%__MODULE__{published?: false} = state, _kind, client, initial_versions)
+       when map_size(initial_versions) > 0 do
     StreamHandler.unavailable(client, "fleet #{state.name} has nothing published yet")
     state
   end

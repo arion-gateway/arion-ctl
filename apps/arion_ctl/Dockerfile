@@ -12,6 +12,7 @@ RUN useradd --create-home --uid 10001 arion && mkdir -p /var/lib/arion-ctl && ch
 WORKDIR /app
 COPY --from=build --chown=arion:arion /src/apps/arion_ctl/_build/prod/rel/arion_ctl ./
 USER arion
+ENV PATH="/app/bin:${PATH}"
 ENV ARION_CTL_STATE_DIR=/var/lib/arion-ctl
 EXPOSE 50051
 ENTRYPOINT ["/app/bin/arionctl"]

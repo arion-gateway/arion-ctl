@@ -148,11 +148,6 @@ defmodule Arion.ControlPlane.Pb.Data.Extensions.Tool do
     json_name: "restBackend",
     oneof: 0
 
-  field :function_graph_backend, 7,
-    type: Arion.ControlPlane.Pb.Data.Extensions.FunctionGraphBackend,
-    json_name: "functionGraphBackend",
-    oneof: 0
-
   field :mcp_server_backend, 8,
     type: Arion.ControlPlane.Pb.Data.Extensions.McpServerBackend,
     json_name: "mcpServerBackend",
@@ -224,15 +219,6 @@ defmodule Arion.ControlPlane.Pb.Data.Extensions.QueryParam do
   field :source, 2, type: :string
 end
 
-defmodule Arion.ControlPlane.Pb.Data.Extensions.FunctionGraphBackend do
-  @moduledoc false
-
-  use Protobuf,
-    full_name: "data.extensions.FunctionGraphBackend",
-    protoc_gen_elixir_version: "0.17.0",
-    syntax: :proto3
-end
-
 defmodule Arion.ControlPlane.Pb.Data.Extensions.McpServerBackend do
   @moduledoc false
 
@@ -245,7 +231,8 @@ defmodule Arion.ControlPlane.Pb.Data.Extensions.McpServerBackend do
     type: Arion.ControlPlane.Pb.Data.Extensions.McpServerBackend.TransportUpstream,
     enum: true
 
-  field :url, 2, type: :string
+  field :path, 2, type: :string
+  field :cluster, 3, type: :string
 end
 
 defmodule Arion.ControlPlane.Pb.Data.Extensions.DynamicMcpServer do
@@ -263,14 +250,16 @@ defmodule Arion.ControlPlane.Pb.Data.Extensions.DynamicMcpServer do
     type: Arion.ControlPlane.Pb.Data.Extensions.McpServerBackend.TransportUpstream,
     enum: true
 
-  field :url, 4, type: :string
+  field :path, 4, type: :string
   field :cache_duration, 5, type: Google.Protobuf.Duration, json_name: "cacheDuration"
   field :rbac, 6, proto3_optional: true, type: Arion.ControlPlane.Pb.Data.Extensions.ToolRbac
 
-  field :tool_disclosure_mode, 7,
+  field :disclosure_mode, 7,
     type: Arion.ControlPlane.Pb.Data.Extensions.DisclosureMode,
-    json_name: "toolDisclosureMode",
+    json_name: "disclosureMode",
     enum: true
+
+  field :cluster, 8, type: :string
 end
 
 defmodule Arion.ControlPlane.Pb.Data.Extensions.OpenApiToolSource do
@@ -291,9 +280,9 @@ defmodule Arion.ControlPlane.Pb.Data.Extensions.OpenApiToolSource do
 
   field :rbac, 5, proto3_optional: true, type: Arion.ControlPlane.Pb.Data.Extensions.ToolRbac
 
-  field :tool_disclosure_mode, 6,
+  field :disclosure_mode, 6,
     type: Arion.ControlPlane.Pb.Data.Extensions.DisclosureMode,
-    json_name: "toolDisclosureMode",
+    json_name: "disclosureMode",
     enum: true
 
   field :path_prefix, 7, proto3_optional: true, type: :string, json_name: "pathPrefix"

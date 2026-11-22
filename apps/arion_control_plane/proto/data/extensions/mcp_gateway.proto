@@ -57,12 +57,14 @@ message Tool {
   data.DataSource output_schema = 5;
   oneof upstream_backend {
     RestBackend rest_backend = 6;
-    FunctionGraphBackend function_graph_backend = 7;
     McpServerBackend mcp_server_backend = 8;
   }
   optional ToolRbac rbac = 9;
   repeated float embedding = 10 [packed = true];
   DisclosureMode disclosure_mode = 11;
+
+  reserved 7;
+  reserved "function_graph_backend";
 }
 
 enum DisclosureMode {
@@ -101,10 +103,6 @@ message QueryParam {
   string source = 2;
 }
 
-message FunctionGraphBackend {
-  // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.FunctionGraphBackend"
-}
-
 message McpServerBackend {
   // maps to "arion.extensions.filters.http.mcp.mcp_gateway.v3.McpServerBackend"
 
@@ -114,10 +112,11 @@ message McpServerBackend {
   }
 
   TransportUpstream transport = 1;
-  string url = 2;
+  string path = 2;
+  string cluster = 3;
 
-  reserved 3 to 4;
-  reserved "cache_duration", "dynamic_backend";
+  reserved 4;
+  reserved "dynamic_backend";
 }
 
 message DynamicMcpServer {
@@ -126,10 +125,11 @@ message DynamicMcpServer {
   string namespace = 1;
   string description = 2;
   McpServerBackend.TransportUpstream transport = 3;
-  string url = 4;
+  string path = 4;
   google.protobuf.Duration cache_duration = 5;
   optional ToolRbac rbac = 6;
-  DisclosureMode tool_disclosure_mode = 7;
+  DisclosureMode disclosure_mode = 7;
+  string cluster = 8;
 }
 
 message OpenApiToolSource {
@@ -140,7 +140,7 @@ message OpenApiToolSource {
   string cluster = 3;
   HttpUpstreamPolicy upstream_policy = 4;
   optional ToolRbac rbac = 5;
-  DisclosureMode tool_disclosure_mode = 6;
+  DisclosureMode disclosure_mode = 6;
   optional string path_prefix = 7;
   bool skip_unsupported_operations = 8;
   repeated string include_operations = 9;

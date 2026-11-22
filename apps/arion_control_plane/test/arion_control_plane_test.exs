@@ -569,18 +569,19 @@ defmodule Arion.ControlPlaneTest do
         "docs",
         "remote",
         "Remote documentation server",
-        McpGateway.mcp_server_backend("https://docs.example/mcp")
+        McpGateway.mcp_server_backend("docs-mcp", "/mcp")
       )
 
     dynamic_server =
-      McpGateway.dynamic_server("ops", "Operations MCP", "https://ops.example/mcp",
+      McpGateway.dynamic_server("ops", "Operations MCP", "ops-mcp", "/mcp",
         cache_duration: 30,
         rbac: McpGateway.rbac(:DENY, [McpGateway.jwt_header("role", "guest")]),
-        tool_disclosure: :eager
+        disclosure: :eager
       )
 
     open_api_source =
       McpGateway.open_api_source("billing", "billing-api", ~s({"openapi":"3.0.0"}),
+        disclosure: :eager,
         path_prefix: "/v1",
         skip_unsupported_operations: true,
         include_operations: ["listInvoices"]
@@ -616,6 +617,15 @@ defmodule Arion.ControlPlaneTest do
     assert {:rest_backend, rest} = tool.upstream_backend
     assert {:body_template, _} = rest.body
     assert rest.upstream_policy.authority == "search.internal"
+
+    assert {:mcp_server_backend, mcp_backend} = mcp_server_tool.upstream_backend
+    assert mcp_backend.cluster == "docs-mcp"
+    assert mcp_backend.path == "/mcp"
+
+    assert dynamic_server.cluster == "ops-mcp"
+    assert dynamic_server.path == "/mcp"
+    assert dynamic_server.disclosure_mode == :EAGER
+    assert open_api_source.disclosure_mode == :EAGER
 
     assert McpGateway.resource_id("demo-gateway", "gateway", "docs.search") ==
              "demo-gateway/gateway/docs.search"

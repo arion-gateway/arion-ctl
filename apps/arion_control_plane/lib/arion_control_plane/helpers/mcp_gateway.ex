@@ -120,8 +120,9 @@ defmodule Arion.ControlPlane.Helpers.McpGateway do
   def query_param({name, source}), do: query_param(name, source)
   def query_param(name, source), do: %Pb.QueryParam{name: name, source: source}
 
-  def mcp_server_backend(url, transport \\ :StreamableHttp) do
-    {:mcp_server_backend, %Pb.McpServerBackend{transport: transport, url: url}}
+  def mcp_server_backend(cluster, path, transport \\ :StreamableHttp) do
+    {:mcp_server_backend,
+     %Pb.McpServerBackend{cluster: cluster, path: path, transport: transport}}
   end
 
   def upstream_policy(opts \\ []) do
@@ -132,15 +133,17 @@ defmodule Arion.ControlPlane.Helpers.McpGateway do
     }
   end
 
-  def dynamic_server(namespace, description, url, opts \\ []) do
+  def dynamic_server(namespace, description, cluster, path, opts \\ []) do
     %Pb.DynamicMcpServer{
       namespace: namespace,
       description: description,
-      url: url,
+      cluster: cluster,
+      path: path,
       transport: Keyword.get(opts, :transport, :StreamableHttp),
       cache_duration: duration(Keyword.get(opts, :cache_duration)),
       rbac: Keyword.get(opts, :rbac),
-      tool_disclosure_mode: disclosure(Keyword.get(opts, :tool_disclosure))
+      disclosure_mode:
+        disclosure(Keyword.get(opts, :disclosure, Keyword.get(opts, :tool_disclosure)))
     }
   end
 
@@ -152,7 +155,8 @@ defmodule Arion.ControlPlane.Helpers.McpGateway do
       spec: data_source(spec),
       upstream_policy: Keyword.get(opts, :upstream_policy),
       rbac: Keyword.get(opts, :rbac),
-      tool_disclosure_mode: disclosure(Keyword.get(opts, :tool_disclosure)),
+      disclosure_mode:
+        disclosure(Keyword.get(opts, :disclosure, Keyword.get(opts, :tool_disclosure))),
       path_prefix: Keyword.get(opts, :path_prefix),
       skip_unsupported_operations: Keyword.get(opts, :skip_unsupported_operations, false),
       include_operations: Keyword.get(opts, :include_operations, []),

@@ -74,7 +74,7 @@ Verify an external library consumer:
 ```sh
 ARION_CTL_PATH="$PWD" bin/verify-consumer
 # Requires an actually published, compatible tag:
-ARION_CTL_TAG=v0.1.0 bin/verify-consumer
+ARION_CTL_TAG=v1.0.0 bin/verify-consumer
 ```
 
 Exercise the packaged CLI against a separate Arion build:
@@ -92,8 +92,8 @@ HTTP example.
 Build images from the repository root:
 
 ```sh
-docker build -f apps/arion_ctl/Dockerfile -t arion-ctl:0.1.0-local .
-docker build -f apps/arion_k8s_controller/Dockerfile -t arion-ctl-controller:0.1.0-local .
+docker build -f apps/arion_ctl/Dockerfile -t arion-ctl:1.0.0-local .
+docker build -f apps/arion_k8s_controller/Dockerfile -t arion-ctl-controller:1.0.0-local .
 ```
 
 Build the proxy from its separate repository using its `docker/Dockerfile`.
@@ -145,7 +145,7 @@ translation test coverage or successful Helm rendering as conformance.
 
 ## Releases
 
-Version 0.1.0 is the initial packaging target in the current release configuration.
+Version 1.0.0 is the initial packaging target in the current release configuration.
 Confirm remote artifacts exist before directing consumers to them. Building locally
 does not publish repositories, tags, images, or charts.
 
@@ -159,9 +159,8 @@ tag, currently:
 1. Runs app checks, builds the standalone release, verifies a tagged external
    consumer, and tests CLI/proxy integration.
 2. Publishes versioned standalone and controller images to GHCR.
-3. Runs kind integration/conformance against those published images.
-4. Publishes the OCI chart at
-   `oci://ghcr.io/arion-gateway/charts/arion-ctl` after integration succeeds.
+3. Publishes the OCI chart at
+   `oci://ghcr.io/arion-gateway/charts/arion-ctl` after image publishing succeeds.
 
 Controller image tags default to chart appVersion. Configure package visibility
 for the intended installation audience. Review unresolved compatibility findings

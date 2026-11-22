@@ -57,11 +57,11 @@ loopback backend/listener addresses correct for the host proxy.
 Build locally from the repository root:
 
 ```sh
-docker build -f apps/arion_ctl/Dockerfile -t arion-ctl:0.1.0-local .
+docker build -f apps/arion_ctl/Dockerfile -t arion-ctl:1.0.0-local .
 docker run -d --name arion-ctl-docs \
   -p 127.0.0.1:15051:50051 \
   -v arion-docs-state:/var/lib/arion-ctl \
-  arion-ctl:0.1.0-local
+  arion-ctl:1.0.0-local
 docker logs arion-ctl-docs
 ```
 
@@ -98,7 +98,7 @@ only when its saved configuration is no longer needed.
 
 A versioned published image can replace the local image after you have confirmed
 that the chosen release is available and compatible. The packaging target is
-`ghcr.io/arion-gateway/arion-ctl:0.1.0`; its presence is not assumed here.
+`ghcr.io/arion-gateway/arion-ctl:1.0.0`; its presence is not assumed here.
 
 ### If the proxy or backend also runs in a container
 

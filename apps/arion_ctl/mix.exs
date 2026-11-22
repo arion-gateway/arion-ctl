@@ -18,7 +18,7 @@ defmodule Arion.Ctl.MixProject do
   def project do
     [
       app: :arion_ctl,
-      version: "0.1.0",
+      version: "1.0.0",
       elixir: "~> 1.20",
       start_permanent: Mix.env() == :prod,
       releases: [arion_ctl: [include_executables_for: [:unix], overlays: ["rel/overlays"]]],

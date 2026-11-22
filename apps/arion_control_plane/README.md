@@ -24,7 +24,7 @@ After a corresponding Git tag is actually published, a consumer can instead use:
 ```elixir
 {:arion_control_plane,
  git: "https://github.com/arion-gateway/arion-ctl.git",
- tag: "v0.1.0", subdir: "apps/arion_control_plane"}
+ tag: "v1.0.0", subdir: "apps/arion_control_plane"}
 ```
 
 The library declares Elixir `~> 1.17`; the documentation examples were checked

@@ -57,9 +57,9 @@ for your chosen Gateway API version.
 
 The chart defaults are version-pinned:
 
-- Controller: `ghcr.io/arion-gateway/arion-ctl-controller:0.1.0`
+- Controller: `ghcr.io/arion-gateway/arion-ctl-controller:1.0.0`
   (`image.tag` falls back to chart appVersion).
-- Proxy: `ghcr.io/arion-gateway/arion:0.1.0`.
+- Proxy: `ghcr.io/arion-gateway/arion:1.0.0`.
 
 Confirm these artifacts are published and accessible before relying on them.
 With available default images:
@@ -75,8 +75,8 @@ For your own compatible versioned images:
 helm upgrade --install arion-ctl charts/arion-ctl \
   --namespace arion-system --create-namespace --wait \
   --set image.repository=registry.example/arion-ctl-controller \
-  --set-string image.tag=0.1.0 \
-  --set-string dataPlane.image=registry.example/arion:0.1.0
+  --set-string image.tag=1.0.0 \
+  --set-string dataPlane.image=registry.example/arion:1.0.0
 ```
 
 Replace the illustrative registry names with images you have built and pushed
@@ -88,7 +88,7 @@ After a versioned OCI chart has been published, it can replace the checkout path
 
 ```sh
 helm upgrade --install arion-ctl oci://ghcr.io/arion-gateway/charts/arion-ctl \
-  --version 0.1.0 --namespace arion-system --create-namespace --wait
+  --version 1.0.0 --namespace arion-system --create-namespace --wait
 ```
 
 `imagePullSecrets` configures controller image credentials. Provisioned proxies
@@ -174,7 +174,7 @@ The full values file is [values.yaml](values.yaml).
 | `image.tag` | Chart appVersion | Controller tag |
 | `image.pullPolicy` | `IfNotPresent` | Controller pull policy |
 | `imagePullSecrets` | `[]` | Controller registry credentials |
-| `dataPlane.image` | `ghcr.io/arion-gateway/arion:0.1.0` | Default provisioned proxy image |
+| `dataPlane.image` | `ghcr.io/arion-gateway/arion:1.0.0` | Default provisioned proxy image |
 | `controllerName` | `arion.io/gateway-controller` | GatewayClass controller identity |
 | `gatewayClass.create` / `gatewayClass.name` | `true` / `arion` | Chart-managed class |
 | `leaderElection` | `true` | Cluster replicas and elect one writer |

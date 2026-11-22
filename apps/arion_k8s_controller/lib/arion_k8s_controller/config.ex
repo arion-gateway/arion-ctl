@@ -35,7 +35,7 @@ defmodule Arion.K8sController.Config do
             cluster_namespace: "arion-system",
             cluster_pod_basename: "arion",
             # Defaults for provisioned Arion data planes.
-            arion_image: "ghcr.io/arion-gateway/arion:0.1.0",
+            arion_image: "ghcr.io/arion-gateway/arion:1.0.0",
             ads_service: "arion-ctl-controller-ads",
             ads_namespace: "arion-system"
 

@@ -377,7 +377,7 @@ defmodule Arion.K8sController.DeployerTest do
     test "falls back to config defaults without parameters" do
       params = Params.plan(gateway(), config())
 
-      assert params.image == "ghcr.io/arion-gateway/arion:0.1.0"
+      assert params.image == "ghcr.io/arion-gateway/arion:1.0.0"
       assert params.replicas == 1
       assert params.service_type == "LoadBalancer"
       refute params.self_managed?
